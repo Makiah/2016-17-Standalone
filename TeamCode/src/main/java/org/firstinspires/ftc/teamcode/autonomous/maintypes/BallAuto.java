@@ -5,19 +5,20 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
 import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 public abstract class BallAuto extends AutoBase implements OnAlliance
 {
     private boolean getCapBall = true;
     private boolean parkOnCenterVortex = false;
 
-    protected void driverStationSaysINITIALIZE() throws InterruptedException
+    protected void driverStationSaysINITIALIZE () throws InterruptedException
     {
+        NiFTConsole.ProcessConsole settingsConsole = new NiFTConsole.ProcessConsole ("Current Settings");
+
+        super.driverStationSaysINITIALIZE ();
+
         long delay = 0;
         long lastDelayIncrementTime = 0;
-
-        NiFTConsole.ProcessConsole processConsole = new NiFTConsole.ProcessConsole ("Selected Options");
 
         //Get input stuff for delay, etc.
         while (!opModeIsActive ()) //While start not pressed
@@ -41,59 +42,63 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
             if (gamepad1.x || gamepad2.x)
                 parkOnCenterVortex = true;
 
-            processConsole.updateWith (
+            settingsConsole.updateWith (
                     "Delay (DPAD) is " + delay,
                     "Getting cap ball (Y) = " + getCapBall,
-                    "Parking on Center Vortex (X) = " + parkOnCenterVortex
+                    "Parking on CV (X) = " + parkOnCenterVortex
             );
 
-            NiFTFlow.pauseForSingleFrame ();
+            idle ();
         }
 
-        processConsole.destroy ();
-
-        NiFTFlow.pauseForMS (delay);
+        sleep (delay);
     }
 
-    protected void driverStationSaysGO() throws InterruptedException
+    @Override
+    protected void driverStationSaysGO () throws InterruptedException
     {
-        boolean onBlueAlliance = (getAlliance () == Alliance.BLUE);
+        boolean onBlueAlliance = (getAlliance() == Alliance.BLUE);
         int autonomousSign = (onBlueAlliance ? 1 : -1);
 
         //Drive to the cap ball.
-        NiFTConsole.outputNewSequentialLine ("Driving to shooting position...");
-        drive (SensorStopType.Ultrasonic, 40, PowerUnits.RevolutionsPerMinute, 1);
+        NiFTConsole.outputNewSequentialLine ("Driving to shooting position.");
+        driveUntilDistanceFromObstacle (40, .27);
 
         //Shoot the balls into the center vortex.
-        NiFTConsole.outputNewSequentialLine("Shooting balls into center vortex...");
+        NiFTConsole.outputNewSequentialLine ("Shooting balls into center vortex...");
         shootBallsIntoCenterVortex ();
 
         if (parkOnCenterVortex)
         {
-            NiFTConsole.outputNewSequentialLine ("Parking on center vortex...");
-            drive(SensorStopType.Distance, 1400, PowerUnits.RevolutionsPerMinute, 2);
+            NiFTConsole.outputNewSequentialLine ("Parking on center vortex.");
+            driveForDistance (0.5, 1400);
             return; //End prematurely
         }
 
         if (getCapBall)
         {
             //Drive the remainder of the distance.
-            NiFTConsole.outputNewSequentialLine ("Knocking the cap ball off of the pedestal...");
-            drive(SensorStopType.Distance, 1800, PowerUnits.RevolutionsPerMinute, 3);
+            NiFTConsole.outputNewSequentialLine ("Knock the cap ball off of the pedestal.");
+            driveForDistance (0.5, 1800);
 
             //Turn to face the ramp from the position that we drove.
-            NiFTConsole.outputNewSequentialLine ("Turning to the appropriate heading...");
+            NiFTConsole.outputNewSequentialLine ("Turning to the appropriate heading.");
             turnToHeading (110 * autonomousSign, TurnMode.BOTH, 3000);
-        }
-        else
+        } else
         {
             //Turn to face the ramp from the position that we drove.
-            NiFTConsole.outputNewSequentialLine ("Turning to the appropriate heading...");
+            NiFTConsole.outputNewSequentialLine ("Turning to the appropriate heading.");
             turnToHeading (70 * autonomousSign, TurnMode.BOTH, 3000);
         }
 
         //Drive until we reach the appropriate position.
-        NiFTConsole.outputNewSequentialLine ("Driving to the ramp...");
-        drive(SensorStopType.Distance, 1000, PowerUnits.RevolutionsPerMinute, 1);
+        NiFTConsole.outputNewSequentialLine ("Drive to the ramp, stopping upon bottom color sensor reaches the blue region on the ramp.");
+        startDrivingAt (0.6);
+
+        long startDriveTime = System.currentTimeMillis (); //Max time at 6 seconds.
+        while (bottomColorSensor.sensor.red () <= 2.5 && (System.currentTimeMillis () - startDriveTime) < 6000)
+            applySensorAdjustmentsToMotors (true, false, false);
+
+        stopDriving ();
     }
 }

@@ -1,11 +1,9 @@
 package org.firstinspires.ftc.teamcode.autonomous.maintypes;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.NiFTBase;
 import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.hardware.NiFTInitializer;
 import org.firstinspires.ftc.teamcode.hardware.NiFTMotorController;
 import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
@@ -39,8 +37,8 @@ public abstract class ResetAuto extends NiFTBase
     protected void driverStationSaysINITIALIZE()
     {
         //Set the motor powers.
-        leftDrive.setDirectMotorPower (getSign() * .5);
-        rightDrive.setDirectMotorPower (getSign () * -.5);
+        leftDrive.setDirectMotorPower (getSign() * -.5);
+        rightDrive.setDirectMotorPower (getSign () * .5);
     }
 
     @Override

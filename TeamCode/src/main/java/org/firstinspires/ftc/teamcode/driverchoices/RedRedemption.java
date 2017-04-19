@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.driverchoices;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
 import org.firstinspires.ftc.teamcode.autonomous.maintypes.BeaconAuto;
 
 @Autonomous(name="Red Redemption", group = "Auto Group")

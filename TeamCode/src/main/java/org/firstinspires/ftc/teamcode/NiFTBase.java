@@ -22,6 +22,7 @@ public abstract class NiFTBase extends LinearOpMode
 
             //REQUIRED in child classes.
             initializeHardware ();
+            NiFTConsole.outputNewSequentialLine ("Hardware Initialization Complete!");
 
             //May be used in different programs.
             driverStationSaysINITIALIZE ();
