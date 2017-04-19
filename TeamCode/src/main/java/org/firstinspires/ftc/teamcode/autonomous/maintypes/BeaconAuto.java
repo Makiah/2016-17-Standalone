@@ -163,9 +163,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
             /******** STEP 3: PRESS AND VERIFY THE BEACON!!!!! ********/
 
-            NiFTConsole.outputNewSequentialLine (
-                    "Ahoy there!  Beacon spotted!  Option 1 is " + (option1Blue ? "blue" : "red") + " and option 2 is " + (option2Blue ? "blue" : "red")
-            );
+            NiFTConsole.outputNewSequentialLine ("Ahoy there!  Beacon spotted!  Option 1 is " + (option1Blue ? "blue" : "red") + " and option 2 is " + (option2Blue ? "blue" : "red"));
 
             //Extend the button pusher and the sensors until two distinct colors are seen.
             NiFTConsole.outputNewSequentialLine ("Extending to see beacon...");
@@ -269,7 +267,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
             NiFTConsole.outputNewSequentialLine ("I would have shot balls here, but that's not coded yet :(");
 
 
-        /******** STEP 4: PARK AND KNOCK OFF THE CAP BALL ********/
+        /*------- STEP 4: PARK AND KNOCK OFF THE CAP BALL -------*/
 
         NiFTConsole.outputNewSequentialLine ("Knocking the cap ball off of the pedestal...");
         turnToHeading (36 * autonomousSign - (onBlueAlliance ? 0 : 180), TurnMode.BOTH, 2000);
