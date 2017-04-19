@@ -21,6 +21,14 @@ public abstract class MainRobotBase extends NiFTBase
     protected void initializeHardware () throws InterruptedException
     {
         //Make sure that the robot components are found and initialized correctly.
+
+        /*************************** SERVOS ***************************/
+        NiFTConsole.outputNewSequentialLine ("Setting up servos...");
+        rightButtonPusher = new NiFTServo ("rightButtonPusher", 0.5);
+        frontButtonPusher = new NiFTServo ("frontButtonPusher", .21, .84, .84);
+        capBallHolder = new NiFTServo ("clamp", .02, .02, 1.0);
+        NiFTConsole.appendToLastSequentialLine ("OK!");
+
         /*************************** DRIVING MOTORS ***************************/
         NiFTConsole.outputNewSequentialLine ("Setting up drive motors...");
         //The back motors are the ones that have functional encoders, while the front ones don't currently work.
@@ -28,12 +36,12 @@ public abstract class MainRobotBase extends NiFTBase
                 setRPSConversionFactor (0.40).
                 setMotorDirection (DcMotorSimple.Direction.REVERSE).
                 setAdjustmentSensitivity (.00001).
-                setAdjustmentSensitivityBounds (0.3);
+                setAdjustmentSensitivityBounds (0.2);
 
         rightDrive = new NiFTMotorController ("Right Drive", "backRight", "frontRight").
                 setRPSConversionFactor (0.36).
                 setAdjustmentSensitivity (.00001).
-                setAdjustmentSensitivityBounds (0.3);;
+                setAdjustmentSensitivityBounds (0.2);
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
         /*************************** OTHER MOTORS AND SERVOS ***************************/
@@ -59,14 +67,10 @@ public abstract class MainRobotBase extends NiFTBase
         lift.setDirection (DcMotorSimple.Direction.REVERSE);
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
-        NiFTConsole.outputNewSequentialLine ("Setting up servos...");
-        rightButtonPusher = new NiFTServo ("rightButtonPusher", 0.5);
-        frontButtonPusher = new NiFTServo ("frontButtonPusher", .21, .84, .84);
-        capBallHolder = new NiFTServo ("clamp", .02, .02, 1.0);
-        NiFTConsole.appendToLastSequentialLine ("OK!");
-
         //Certain things are only applicable in autonomous or teleop.
         initializeOpModeSpecificHardware ();
+
+        NiFTConsole.outputNewSequentialLine ("Initialization Complete!");
     }
 
     //Optional overload.

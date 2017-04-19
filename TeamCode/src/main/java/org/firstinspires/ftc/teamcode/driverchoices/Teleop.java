@@ -20,7 +20,7 @@ public class Teleop extends MainRobotBase
                 rightPusherPowerLeft, rightPusherPowerRight;
         boolean backwards = false;
         double speedCoefficient = 1.0;
-        double flywheelCoefficient = 0.4;
+        double flywheelCoefficient = 0.52;
         boolean pressingFlywheelC = false;
         boolean fbpUp = true;
         boolean capBallMode = false, capBallMode2 = false;

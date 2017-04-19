@@ -8,7 +8,7 @@ public abstract class NiFTAsyncTask extends AsyncTask <Void, Void, Void>
 {
     //Creates a task with the given name, and creates a new process console for the task.
     private final String taskName;
-    private final NiFTConsole.ProcessConsole processConsole;
+    protected final NiFTConsole.ProcessConsole processConsole;
     //Default constructor, initializes with default name.
     public NiFTAsyncTask()
     {

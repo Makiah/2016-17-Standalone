@@ -126,6 +126,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 updateColorSensorStates ();
             }
 
+            //Output that the program has essentially completed at this point.
             NiFTConsole.outputNewSequentialLine ("Success!  The beacon is completely blue.");
 
             //Retract almost completely and then drive to the next one.

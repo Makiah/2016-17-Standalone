@@ -42,7 +42,8 @@ public class NiFTMotorController
     }
     public NiFTMotorController setRPSConversionFactor(double rpsConversionFactor)
     {
-        this.rpsConversionFactor = rpsConversionFactor;
+        //Bounds are 0.005 to 5, since greater than that would have to be a glitch.
+        this.rpsConversionFactor = Range.clip(rpsConversionFactor, 0.005, 5);
         return this;
     }
 
@@ -259,7 +260,7 @@ public class NiFTMotorController
             actualTicksSinceUpdate = Math.random() * encoderMotor.getCurrentPosition () - previousMotorPosition;
 
             //Sensitivity is the coefficient below, and bounds are .5 and -.5 so that momentary errors don't result in crazy changes.
-            rpsConversionFactor += Math.signum (desiredRPS) * Range.clip (((expectedTicksSinceUpdate - actualTicksSinceUpdate) * sensitivity), -sensitivityBound, sensitivityBound);
+            setRPSConversionFactor (rpsConversionFactor + Math.signum (desiredRPS) * Range.clip (((expectedTicksSinceUpdate - actualTicksSinceUpdate) * sensitivity), -sensitivityBound, sensitivityBound));
 
             updateMotorPowers ();
         }
