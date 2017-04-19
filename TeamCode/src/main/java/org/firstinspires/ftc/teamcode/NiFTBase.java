@@ -33,7 +33,7 @@ public abstract class NiFTBase extends LinearOpMode
             //This is where the child classes mainly differ in their instructions.
             driverStationSaysGO ();
         }
-        catch (InterruptedException e) {} //If this is caught, then the user requested program stop.
+        catch (InterruptedException e) {/**/} //If this is caught, then the user requested program stop.
         catch (Exception e) //If this is caught, it wasn't an InterruptedException and wasn't requested, so the user is notified.
         {
             NiFTConsole.outputNewSequentialLine ("UH OH!  An error was just thrown!");
@@ -46,7 +46,7 @@ public abstract class NiFTBase extends LinearOpMode
                 while (true)
                     NiFTFlow.pauseForSingleFrame ();
             }
-            catch (InterruptedException e2) {} //The user has read the message and stops the program.
+            catch (InterruptedException e2) {/**/} //The user has read the message and stops the program.
         }
         finally //Occurs after all possible endings.
         {

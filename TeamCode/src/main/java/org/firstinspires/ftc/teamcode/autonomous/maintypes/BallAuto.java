@@ -62,16 +62,16 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
 
         //Drive to the cap ball.
         NiFTConsole.outputNewSequentialLine ("Driving to shooting position.");
-        driveUntilDistanceFromObstacle (40, .27);
+        drive (TerminationType.RANGE_DIST, 40, .27);
 
         //Shoot the balls into the center vortex.
         NiFTConsole.outputNewSequentialLine ("Shooting balls into center vortex...");
-        shootBallsIntoCenterVortex ();
+        //shootBallsIntoCenterVortex ();
 
         if (parkOnCenterVortex)
         {
             NiFTConsole.outputNewSequentialLine ("Parking on center vortex.");
-            driveForDistance (0.5, 1400);
+            //driveForDistance (0.5, 1400);
             return; //End prematurely
         }
 
@@ -79,7 +79,7 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
         {
             //Drive the remainder of the distance.
             NiFTConsole.outputNewSequentialLine ("Knock the cap ball off of the pedestal.");
-            driveForDistance (0.5, 1800);
+            //driveForDistance (0.5, 1800);
 
             //Turn to face the ramp from the position that we drove.
             NiFTConsole.outputNewSequentialLine ("Turning to the appropriate heading.");

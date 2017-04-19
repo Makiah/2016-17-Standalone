@@ -16,79 +16,75 @@ public abstract class AutoBase extends MainRobotBase
     /******** SENSOR STUFF ********/
 
     /**** Color Sensors (3) ****/
-    protected NiFTColorSensor option1ColorSensor, option2ColorSensor, bottomColorSensor, particleColorSensor; //Must have different I2C addresses.
-    protected boolean option1Red, option2Red, option1Blue, option2Blue;
+    protected NiFTColorSensor option1ColorSensor, option2ColorSensor, bottomColorSensor, particleColorSensor;
 
+    protected boolean option1Red, option2Red, option1Blue, option2Blue;
     protected void updateColorSensorStates ()
     {
-        //Threshold is currently 2, but this could be changed.
-        option1Blue = option1ColorSensor.sensor.blue () >= 2;
-        option1Red = option1ColorSensor.sensor.red () >= 1 && !option1Blue; //Since blue has an annoying tendency to see red and blue color values.
-        option2Blue = option2ColorSensor.sensor.blue () >= 2;
-        option2Red = option2ColorSensor.sensor.red () >= 1 && !option2Blue;
+        final int redThreshold = 2, blueThreshold = 3;
+        option1Blue = option1ColorSensor.sensor.blue () >= blueThreshold;
+        option1Red = option1ColorSensor.sensor.red () >= redThreshold;
+        option2Blue = option2ColorSensor.sensor.blue () >= blueThreshold;
+        option2Red = option2ColorSensor.sensor.red () >= redThreshold;
     }
-
 
     /**** Gyro ****/
     protected NiFTGyroSensor gyroscope;
 
     //Used to turn to a specified heading, and returns the difference between the desired angle and the actual angle achieved.
-    protected enum TurnMode
-    {
-        LEFT, RIGHT, BOTH
-    }
-
-    //This battery factor, when updated, remains updated for all future turns so that the robot does not have to start changing it again.
+    protected enum TurnMode { LEFT, RIGHT, BOTH }
     protected void turnToHeading (int desiredHeading, TurnMode mode, long maxTime) throws InterruptedException
     {
+        //Set gyro desired heading for future calls.
+        gyroscope.setDesiredHeading (desiredHeading);
+
         //Create a turn process console.
         NiFTConsole.ProcessConsole turnConsole = new NiFTConsole.ProcessConsole ("Turning");
 
-        double turnCoefficient = 0.0042, turnIntercept = 0.2, initialTurnIntercept = turnIntercept;
+        //Required variables.
+        double turnBoost = 0.15;
+        final double turnCoefficient = 0.0035, initialTurnIntercept = turnBoost;
 
-        gyroscope.setDesiredHeading (desiredHeading);
+        //Get the start time so that we know when to end.
+        long turnStartTime = System.currentTimeMillis ();
 
-        //Get the startTime so that we know when to end.
-        long startTime = System.currentTimeMillis ();
-        int priorHeading = gyroscope.getValidGyroHeading ();
-        long lastCheckedTime = startTime;
+        //Get initial values for the automatic boost increase/decrease.
+        int lastOffFromHeading = gyroscope.getOffFromHeading (), currentOffFromHeading = lastOffFromHeading;
+        long lastCheckedTime = turnStartTime;
 
-        int currentHeading = priorHeading;
-        //Adjust as fully as possible but not beyond the time limit.
-        while (opModeIsActive () && (System.currentTimeMillis () - startTime < maxTime || Math.abs (currentHeading - desiredHeading) >= 10))
+        //While the time limit is not up or the heading is still unacceptably far off.
+        while (System.currentTimeMillis () - turnStartTime < maxTime || currentOffFromHeading >= 10)
         {
+            //Get the current off from heading.
+            currentOffFromHeading = gyroscope.getOffFromHeading ();
+
             //Verify that the heading that we thought was perfectly on point actually is on point.
-            if (gyroscope.getOffFromHeading () == 0)
+            if (currentOffFromHeading == 0)
             {
                 hardBrake (100);
-                //Verify that it really is at the correct heading (like never happens ever) and if it really was, then try something else.
+
+                //Obtain new value and check again.
                 if (gyroscope.getOffFromHeading () == 0)
                     break;
             }
 
-            /*** Verify that we are turning ****/
-            currentHeading = gyroscope.getValidGyroHeading ();
-
             //Protection against stalling, increases power if no observed heading change in last fraction of a second.
-            if (System.currentTimeMillis () - lastCheckedTime >= 300 && (System.currentTimeMillis () - startTime) > 1000)
+            if (System.currentTimeMillis () - lastCheckedTime >= 300 && (System.currentTimeMillis () - turnStartTime) > 1000)
             {
-                int headingChange = Math.abs (priorHeading - currentHeading);
+                int changeFromLastBoostCheck = Math.abs (lastOffFromHeading - currentOffFromHeading);
                 //Don't start increasing power at the very start of the turn before the robot has had time to accelerate.
-                if (headingChange <= 1)
-                    turnIntercept += 0.06;
-                else if (headingChange >= 7 && turnIntercept > initialTurnIntercept)
-                    turnIntercept -= 0.03;
+                if (changeFromLastBoostCheck <= 1)
+                    turnBoost += 0.06;
+                else if (changeFromLastBoostCheck >= 7 && turnBoost > initialTurnIntercept)
+                    turnBoost -= 0.03;
 
                 //Update other variables.
-                priorHeading = currentHeading;
+                lastOffFromHeading = currentOffFromHeading;
                 lastCheckedTime = System.currentTimeMillis ();
             }
 
-            /**** turn at some power. ****/
             //Turn at a speed proportional to the distance from the ideal heading.
-            int thetaFromHeading = desiredHeading - currentHeading;
-
-            double turnPower = Math.signum (thetaFromHeading) * (Math.abs (thetaFromHeading) * turnCoefficient + turnIntercept);
+            double turnPower = Math.signum (currentOffFromHeading) * (Math.abs (currentOffFromHeading) * turnCoefficient + turnBoost);
 
             //Set clipped powers.
             if (mode != TurnMode.RIGHT)
@@ -96,24 +92,25 @@ public abstract class AutoBase extends MainRobotBase
             if (mode != TurnMode.LEFT)
                 rightDrive.setDirectMotorPower (-1 * Range.clip (turnPower, -1, 1));
 
-            idle ();
             //Output required data.
             turnConsole.updateWith (
-                    "Turning to heading " + gyroscope,
-                    "Current heading = " + currentHeading,
+                    "Turning to heading " + gyroscope.getDesiredHeading (),
+                    "Off by " + currentOffFromHeading + " degrees",
                     "Turn Power is " + turnPower,
-                    "Turn intercept is " + turnIntercept,
-                    "I have " + (maxTime - (System.currentTimeMillis () - startTime)) + "ms left.",
-                    "Turn coefficient = " + turnCoefficient,
-                    "Min turn speed = " + turnIntercept
+                    "Turn boost is " + turnBoost,
+                    "I have " + (maxTime - (System.currentTimeMillis () - turnStartTime)) + "ms left."
             );
+
+            //Pause for a frame so that the program can exit if need be.
+            NiFTFlow.pauseForSingleFrame ();
         }
 
+        //Remove the console.
         turnConsole.destroy ();
 
+        //Brake to make sure we are stationary.
         hardBrake (100);
     }
-
 
     /**** Encoders ****/
     //Since this method takes a half-second or so to complete, try to run it as little as possible.
@@ -150,62 +147,10 @@ public abstract class AutoBase extends MainRobotBase
     /**** Range Sensor(s) ****/
     protected NiFTRangeSensor frontRangeSensor, sideRangeSensor;
 
-    protected void driveUntilDistanceFromObstacle (double stopDistance, double minPower) throws InterruptedException
-    {
-        //Required variables.
-        double lastValidDistance = 150 - stopDistance;
-        double stopAndMoveAtMinPowerDist = 42;
-
-        double distanceFromStop = lastValidDistance;
-        while (distanceFromStop > stopAndMoveAtMinPowerDist)
-        {
-            //Scrub the input to get a valid result (255 is the default invalid value of the range sensors).
-            double perceivedDistanceFromObstacle = frontRangeSensor.ultrasonicDistCM ();
-            if (perceivedDistanceFromObstacle >= 255)
-                perceivedDistanceFromObstacle = lastValidDistance;
-            else
-                lastValidDistance = perceivedDistanceFromObstacle;
-
-            //Calculate the distance until stopping.
-            distanceFromStop = perceivedDistanceFromObstacle - stopDistance;
-
-            //Calculate the new movement power based on this result.
-            //The (movement power - initial movement power) expression incorporates encoder adjustments in the event that the bot is not moving.
-            //Linear trend downwards as we approach the obstacle.
-            movementPower = distanceFromStop * 0.0067 + minPower;
-
-            //Only use encoders.
-            manuallyApplySensorAdjustments (true, true, false);
-        }
-
-        NiFTFlow.pauseForMS (100);
-        stopDriving ();
-
-        //Drive at min power the rest of the way.
-        startDrivingAt (minPower);
-
-        while (distanceFromStop > 0)
-        {
-            double perceivedDistanceFromObstacle = frontRangeSensor.sensor.cmUltrasonic ();
-            if (perceivedDistanceFromObstacle >= 255)
-                perceivedDistanceFromObstacle = lastValidDistance;
-            else
-                lastValidDistance = perceivedDistanceFromObstacle;
-
-            //Calculate the distance until stopping.
-            distanceFromStop = perceivedDistanceFromObstacle - stopDistance;
-
-            //Only use encoders.
-            manuallyApplySensorAdjustments (true, true, false);
-        }
-
-        NiFTFlow.pauseForMS (100);
-        stopDriving ();
-    }
 
     /******** MOVEMENT POWER CONTROL ********/
     //Used to set drive move power initially.
-    protected double movementPower = 0;
+    private double movementPower = 0;
     protected void startDrivingAt (double movementPower)
     {
         this.movementPower = movementPower;
@@ -286,15 +231,14 @@ public abstract class AutoBase extends MainRobotBase
 
     protected void drive (TerminationType terminationType, double stopVal, double movementPower, boolean... adjustments) throws InterruptedException
     {
-        this.movementPower = movementPower;
-
-        int initialDrivePosition = getEncoderPosition ();
+        //Get values required for termination.
         int movementPowerSign = (int) (Math.signum (movementPower));
+        int initialDrivePosition = 0;
+        if (terminationType == TerminationType.ENCODER_DIST)
+            initialDrivePosition = getEncoderPosition ();
 
-        leftDrive.setDirectMotorPower (movementPower);
-        rightDrive.setDirectMotorPower (movementPower);
-
-        encoderDriveSpeedBoost = 0;
+        //Start moving.
+        startDrivingAt (movementPower);
 
         //Start adjusting and checking for termination.
         boolean shouldTerminate = false;
@@ -314,7 +258,7 @@ public abstract class AutoBase extends MainRobotBase
                     break;
 
                 case RANGE_DIST:
-                    shouldTerminate = frontRangeSensor.ultrasonicDistCM () < stopVal;
+                    shouldTerminate = frontRangeSensor.validDistCM (255) < stopVal;
                     break;
 
                 case ENCODER_DIST:
@@ -323,6 +267,7 @@ public abstract class AutoBase extends MainRobotBase
             }
         }
 
+        //Become stationary.
         hardBrake (100);
     }
 

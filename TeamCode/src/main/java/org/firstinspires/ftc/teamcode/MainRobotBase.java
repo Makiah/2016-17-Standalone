@@ -69,8 +69,6 @@ public abstract class MainRobotBase extends NiFTBase
 
         //Certain things are only applicable in autonomous or teleop.
         initializeOpModeSpecificHardware ();
-
-        NiFTConsole.outputNewSequentialLine ("Initialization Complete!");
     }
 
     //Optional overload.
