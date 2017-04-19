@@ -7,12 +7,12 @@ import org.firstinspires.ftc.teamcode.console.NiFTConsole;
 import org.firstinspires.ftc.teamcode.hardware.NiFTColorSensor;
 import org.firstinspires.ftc.teamcode.hardware.NiFTGyroSensor;
 import org.firstinspires.ftc.teamcode.hardware.NiFTRangeSensor;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 
 //For added simplicity while coding autonomous with the new FTC system. Utilizes inheritance and polymorphism.
 public abstract class AutoBase extends MainRobotBase
 {
-
     /******** SENSOR STUFF ********/
 
     /**** Color Sensors (3) ****/
@@ -75,13 +75,9 @@ public abstract class AutoBase extends MainRobotBase
                 int headingChange = Math.abs (priorHeading - currentHeading);
                 //Don't start increasing power at the very start of the turn before the robot has had time to accelerate.
                 if (headingChange <= 1)
-                {
                     turnIntercept += 0.06;
-                }
                 else if (headingChange >= 7 && turnIntercept > initialTurnIntercept)
-                {
                     turnIntercept -= 0.03;
-                }
 
                 //Update other variables.
                 priorHeading = currentHeading;
@@ -115,7 +111,7 @@ public abstract class AutoBase extends MainRobotBase
 
         turnConsole.destroy ();
 
-        stopDriving ();
+        hardBrake (100);
     }
 
 
@@ -179,10 +175,10 @@ public abstract class AutoBase extends MainRobotBase
             movementPower = distanceFromStop * 0.0067 + minPower;
 
             //Only use encoders.
-            applySensorAdjustmentsToMotors (true, true, false);
+            manuallyApplySensorAdjustments (true, true, false);
         }
 
-        sleep (100);
+        NiFTFlow.pauseForMS (100);
         stopDriving ();
 
         //Drive at min power the rest of the way.
@@ -200,31 +196,16 @@ public abstract class AutoBase extends MainRobotBase
             distanceFromStop = perceivedDistanceFromObstacle - stopDistance;
 
             //Only use encoders.
-            applySensorAdjustmentsToMotors (true, true, false);
+            manuallyApplySensorAdjustments (true, true, false);
         }
 
-        sleep (100);
+        NiFTFlow.pauseForMS (100);
         stopDriving ();
     }
-
-    private double calculateSideRangeSensorAdjustment () throws InterruptedException
-    {
-        double rangeSensorReading = sideRangeSensor.sensor.cmUltrasonic ();
-        if (rangeSensorReading >= 50)
-            return 0;
-
-        //Desired range sensor values.
-        double offFromDistance = rangeSensorReading - 15;
-
-        //Change motor powers based on offFromHeading.
-        return Math.signum (offFromDistance) * (Math.abs (offFromDistance) * 0.03);
-    }
-
 
     /******** MOVEMENT POWER CONTROL ********/
     //Used to set drive move power initially.
     protected double movementPower = 0;
-
     protected void startDrivingAt (double movementPower)
     {
         this.movementPower = movementPower;
@@ -232,7 +213,7 @@ public abstract class AutoBase extends MainRobotBase
         leftDrive.setDirectMotorPower (movementPower);
         rightDrive.setDirectMotorPower (movementPower);
 
-        driveSpeedIncrease = 0;
+        encoderDriveSpeedBoost = 0;
     }
 
     //Stops all drive motors.
@@ -246,103 +227,103 @@ public abstract class AutoBase extends MainRobotBase
     protected void hardBrake (long msDelay) throws InterruptedException
     {
         stopDriving ();
-        sleep (msDelay);
+        NiFTFlow.pauseForMS (msDelay);
     }
 
-    private double driveSpeedIncrease = 0;
-
-    protected void applySensorAdjustmentsToMotors (boolean useGyroscope, boolean useEncoders, boolean useSideRange) throws InterruptedException
+    private double encoderDriveSpeedBoost = 0;
+    protected void manuallyApplySensorAdjustments (boolean... adjustments) throws InterruptedException
     {
-        //Will be used multiple times.
-        int movementPowerSign = (int) (Math.signum (movementPower));
-
-        //Calculate the required sensor adjustments based on the parameters.
-        if (useEncoders)
-            driveSpeedIncrease += calculateEncoderAdjustment ();
-        else if (driveSpeedIncrease > 0)
-            driveSpeedIncrease = 0;
-
-        double actualMovementPower = movementPower + movementPowerSign * driveSpeedIncrease;
-
-        //For each result, positive favors left side and negative the right side.
-        double gyroAdjustment = 0;
-        if (useGyroscope)
+        if (adjustments != null)
         {
-            int offFromHeading = gyroscope.getOffFromHeading ();
-            gyroAdjustment = Math.signum (offFromHeading) * (Math.abs (offFromHeading) * .006 + .22);
+            //Will be used multiple times.
+            int movementPowerSign = (int) (Math.signum (movementPower));
+
+            //Calculate the required sensor adjustments based on the parameters.
+            if (adjustments.length >= 2 && adjustments[1])
+                encoderDriveSpeedBoost += calculateEncoderAdjustment ();
+            else if (encoderDriveSpeedBoost > 0)
+                encoderDriveSpeedBoost = 0;
+
+            double actualMovementPower = movementPower + movementPowerSign * encoderDriveSpeedBoost;
+
+            //For each result, positive favors left side and negative the right side.
+            double gyroAdjustment = 0;
+            if (adjustments.length >= 1 && adjustments[0])
+            {
+                int offFromHeading = gyroscope.getOffFromHeading ();
+                gyroAdjustment = Math.signum (offFromHeading) * (Math.abs (offFromHeading) * .006 + .22);
+            }
+
+            double rangeSensorAdjustment = 0;
+            if (adjustments.length >= 3 && adjustments[2])
+            {
+                double rangeSensorReading = sideRangeSensor.sensor.cmUltrasonic ();
+                if (rangeSensorReading >= 50)
+                    rangeSensorAdjustment = 0;
+                else
+                {
+                    //Desired range sensor values.
+                    double offFromDistance = rangeSensorReading - 15;
+
+                    //Change motor powers based on offFromHeading.
+                    rangeSensorAdjustment = Math.signum (offFromDistance) * (Math.abs (offFromDistance) * 0.03);
+                }
+            }
+
+            double totalAdjustmentFactor = movementPowerSign * gyroAdjustment + rangeSensorAdjustment;
+
+            //Set resulting movement powers based on calculated values.  Can be over one since this is fixed later.
+            rightDrive.setDirectMotorPower (actualMovementPower * (1 - totalAdjustmentFactor));
+            leftDrive.setDirectMotorPower (actualMovementPower * (1 + totalAdjustmentFactor));
         }
-
-        double rangeSensorAdjustment = 0;
-        if (useSideRange)
-            rangeSensorAdjustment = calculateSideRangeSensorAdjustment ();
-
-        double totalAdjustmentFactor = movementPowerSign * gyroAdjustment + rangeSensorAdjustment;
-
-        //Set resulting movement powers based on calculated values.  Can be over one since this is fixed later.
-        rightDrive.setDirectMotorPower (actualMovementPower * (1 - totalAdjustmentFactor));
-        leftDrive.setDirectMotorPower (actualMovementPower * (1 + totalAdjustmentFactor));
 
         idle ();
     }
 
 
     /******** DRIVING METHODS ********/
-    //Used to driveForTime in a straight line with the aid of the gyroscope.
-    protected void driveForTime (double power, long length) throws InterruptedException
+    protected enum TerminationType {BOTTOM_ALPHA, RANGE_DIST, ENCODER_DIST}
+
+    protected void drive (TerminationType terminationType, double stopVal, double movementPower, boolean... adjustments) throws InterruptedException
     {
-        startDrivingAt (power); // Set the initial power.
+        this.movementPower = movementPower;
 
-        if (gyroscope != null)
-        {
-            //Required variables.
-            long startTime = System.currentTimeMillis ();
+        int initialDrivePosition = getEncoderPosition ();
+        int movementPowerSign = (int) (Math.signum (movementPower));
 
-            //Gyroscope turning mechanics.
-            while (System.currentTimeMillis () - startTime < length)
-                applySensorAdjustmentsToMotors (true, false, false);
-        } else
+        leftDrive.setDirectMotorPower (movementPower);
+        rightDrive.setDirectMotorPower (movementPower);
+
+        encoderDriveSpeedBoost = 0;
+
+        //Start adjusting and checking for termination.
+        boolean shouldTerminate = false;
+        while (!shouldTerminate)
         {
-            sleep (length);
+            //Run adjustment methods.
+            if (adjustments != null)
+                manuallyApplySensorAdjustments (true, adjustments.length >= 1 && adjustments[0], adjustments.length >= 2 && adjustments[1]);
+
+            NiFTFlow.pauseForSingleFrame ();
+
+            //Check if the drive should terminate.
+            switch (terminationType)
+            {
+                case BOTTOM_ALPHA:
+                    shouldTerminate = bottomColorSensor.sensor.alpha () >= stopVal;
+                    break;
+
+                case RANGE_DIST:
+                    shouldTerminate = frontRangeSensor.ultrasonicDistCM () < stopVal;
+                    break;
+
+                case ENCODER_DIST:
+                    shouldTerminate = (initialDrivePosition + movementPowerSign * stopVal) * movementPowerSign >= getEncoderPosition () * movementPowerSign;
+                    break;
+            }
         }
 
-        //Stop the bot.
-        stopDriving ();
-
-        NiFTConsole.outputNewSequentialLine ("Drove for " + length + " at " + power + ".");
-    }
-
-    protected void driveForDistance (double power, int length) throws InterruptedException
-    {
-        int powerSign = (int) (Math.signum (power));
-        length = Math.abs (length); //Otherwise this will go haywire.
-        double initialDrivePosition = getEncoderPosition ();
-        double desiredPosition = initialDrivePosition + powerSign * length;
-
-        startDrivingAt (power);
-
-        while (desiredPosition * powerSign >= getEncoderPosition () * powerSign)
-            applySensorAdjustmentsToMotors (true, true, false);
-
-        //End the drive upon reaching the target destination.
-        stopDriving ();
-    }
-
-
-    /******** CUSTOM ACTIONS ********/
-    protected void shootBallsIntoCenterVortex () throws InterruptedException
-    {
-        flywheels.startPIDTask ();
-        harvester.startPIDTask ();
-
-        flywheels.setRPS (35);
-        sleep (300);
-        harvester.setRPS (5);
-        sleep (2200);
-        flywheels.setRPS (0);
-        harvester.setRPS (0);
-
-        flywheels.stopPIDTask ();
-        harvester.stopPIDTask ();
+        hardBrake (100);
     }
 
 

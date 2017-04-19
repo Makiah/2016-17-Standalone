@@ -97,7 +97,7 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
 
         long startDriveTime = System.currentTimeMillis (); //Max time at 6 seconds.
         while (bottomColorSensor.sensor.red () <= 2.5 && (System.currentTimeMillis () - startDriveTime) < 6000)
-            applySensorAdjustmentsToMotors (true, false, false);
+            manuallyApplySensorAdjustments (true, false, false);
 
         stopDriving ();
     }

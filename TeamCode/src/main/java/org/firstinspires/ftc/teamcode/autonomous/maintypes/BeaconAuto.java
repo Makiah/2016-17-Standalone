@@ -19,13 +19,25 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         /******** STEP 1: SHOOT, DRIVE, TURN TO BE PARALLEL WITH WALL ********/
 
+        //Start the flywheels so that PID has time to adjust them.
+        flywheels.setRPS (25);
+        flywheels.startPIDTask ();
+
         //Drive until we are just far enough from the cap ball to score reliably.
         NiFTConsole.outputNewSequentialLine ("Driving forward to the cap ball to score...");
-        driveUntilDistanceFromObstacle (41, BEACON_DP);
+        drive (TerminationType.RANGE_DIST, 41, BEACON_DP, true, false);
 
         //Shoot the balls into the center vortex.
         NiFTConsole.outputNewSequentialLine ("Shooting balls into center vortex...");
-        shootBallsIntoCenterVortex ();
+        harvester.startPIDTask ();
+        harvester.setRPS (5);
+        NiFTFlow.pauseForMS (2200);
+
+        //Stop flywheels and harvester.
+        flywheels.setRPS (0);
+        harvester.setRPS (0);
+        flywheels.stopPIDTask ();
+        harvester.stopPIDTask ();
 
         //Turn to face the wall directly.
         NiFTConsole.outputNewSequentialLine ("Turning to face wall at an angle...");
@@ -33,7 +45,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         //Drive to the wall and stop once a little ways away.
         NiFTConsole.outputNewSequentialLine ("Driving to the wall...");
-        driveUntilDistanceFromObstacle ((onBlueAlliance ? 36 : 39), BEACON_DP); //Based on the way the range sensor is angled.
+        drive(TerminationType.RANGE_DIST, (onBlueAlliance ? 36 : 39), BEACON_DP, true);
 
         //Turn back to become parallel with the wall.
         NiFTConsole.outputNewSequentialLine ("Turning to become parallel to the wall...");
@@ -68,7 +80,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 }
 
                 //adjustDirectionBasedOnColorSensors ();
-                applySensorAdjustmentsToMotors (true, true, true);
+                manuallyApplySensorAdjustments (true, true, true);
 
                 beaconViewerConsole.updateWith (
                         "Alpha is " + currentAlpha,
@@ -113,19 +125,22 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                     //Use the option 1 button pusher.
                     drivePower = BEACON_DP * autonomousSign;
                     driveDistance = (onBlueAlliance ? 120 : 90) + 20 * failedAttempts;
-                } else if (option1Red && option2Blue)
+                }
+                else if (option1Red && option2Blue)
                 {
                     buttonPressingConsole.updateWith ("Chose option 2");
                     //Use the option 2 button pusher.
                     drivePower = -BEACON_DP * autonomousSign;
                     driveDistance = (onBlueAlliance ? 180 : 160) + 20 * failedAttempts;
-                } else if (option1Blue ? (option1Red && option2Red) : (option1Blue && option2Blue))
+                }
+                else if (option1Blue ? (option1Red && option2Red) : (option1Blue && option2Blue))
                 {
                     buttonPressingConsole.updateWith ("Neither option is the correct color, toggling beacon!");
                     //Toggle beacon.
                     drivePower = BEACON_DP * autonomousSign;
                     driveDistance = (onBlueAlliance ? 120 : 90) + 20 * failedAttempts;
-                } else
+                }
+                else
                 {
                     failedAttempts = -1; //This will be incremented and returned to 0, fear not.
                     buttonPressingConsole.updateWith ("Can't see the beacon clearly, so double checking!");
@@ -134,7 +149,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 }
 
                 //Drive based on state determined previously.
-                driveForDistance (drivePower, driveDistance);
+                drive (TerminationType.ENCODER_DIST, driveDistance, drivePower);
 
                 //Press the button (which uses the range sensor but pass in time taken)
                 pressButton (timeTakenToSeeDistinctColors);
@@ -142,7 +157,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 //Drive back to the white line.
                 startDrivingAt (Math.signum (drivePower) * BEACON_DP);
                 while (bottomColorSensor.sensor.alpha () <= 4)
-                    applySensorAdjustmentsToMotors (true, true, false);
+                    manuallyApplySensorAdjustments (true, true);
                 hardBrake (100);
 
                 //Update the number of trials completed so that we know the new drive distance and such.
@@ -164,7 +179,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
             rightButtonPusher.setServoPosition (.5); //Stop extending.
 
             //Drive a bit forward from the white line to set up for the next step.
-            driveForDistance (0.42 * autonomousSign, 500);
+            drive(TerminationType.ENCODER_DIST, 3000, -0.42 * autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
         }
 
 
@@ -173,7 +188,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         //Dash backward to the ramp afterward.
         NiFTConsole.outputNewSequentialLine ("Knocking the cap ball off of the pedestal...");
         turnToHeading (36 * autonomousSign - (onBlueAlliance ? 0 : 180), TurnMode.BOTH, 2000);
-        driveForDistance (-1.0 * autonomousSign, 3000); //SPRINT TO THE CAP BALL TO PARK
+        drive(TerminationType.ENCODER_DIST, 3000, -1.0 * autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
 
     }
 
