@@ -14,7 +14,7 @@ public abstract class ResetAuto extends NiFTBase
     protected void initializeHardware () throws InterruptedException
     {
         //Make sure that the robot components are found and initialized correctly.
-        /*************************** DRIVING MOTORS ***************************/
+        /*------------------- DRIVING MOTORS ----------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up drive motors...");
 
         leftDrive = new NiFTMotorController ("Left Drive", "backLeft", "frontLeft").

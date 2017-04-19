@@ -62,13 +62,9 @@ public abstract class NiFTAsyncTask extends AsyncTask <Void, Void, Void>
     protected void onQuitTask () {}
 
     /**
-     * run() attempts to run the program in a try-catch block, and in the event of an
-     * error, stops the attempt and returns an error to the user.
-     *
+     * run() attempts to run the program in a try-catch block, and in the event of an error, stops the attempt and returns an error to the user.
      * stop() attempts to stop the program in a similar manner.
-     *
-     * Example scenarios of error could be when the user has already run a task instance
-     * and has to create a new one, or cancelling a cancelled task.
+     * Example scenarios of error could be when the user has already run a task instance and has to create a new one, or cancelling a cancelled task.
      */
     public void run()
     {

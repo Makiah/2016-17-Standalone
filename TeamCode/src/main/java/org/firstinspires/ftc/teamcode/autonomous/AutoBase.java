@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 //For added simplicity while coding autonomous with the new FTC system. Utilizes inheritance and polymorphism.
 public abstract class AutoBase extends MainRobotBase
 {
-    /******** SENSOR STUFF ********/
+    /*------ SENSOR STUFF ------*/
 
     /**** Color Sensors (3) ****/
     protected NiFTColorSensor option1ColorSensor, option2ColorSensor, bottomColorSensor, particleColorSensor;
@@ -28,7 +28,7 @@ public abstract class AutoBase extends MainRobotBase
         option2Red = option2ColorSensor.sensor.red () >= redThreshold;
     }
 
-    /**** Gyro ****/
+    /*--- Gyro ---*/
     protected NiFTGyroSensor gyroscope;
 
     //Used to turn to a specified heading, and returns the difference between the desired angle and the actual angle achieved.
@@ -112,7 +112,7 @@ public abstract class AutoBase extends MainRobotBase
         hardBrake (100);
     }
 
-    /**** Encoders ****/
+    /*--- Encoders ---*/
     //Since this method takes a half-second or so to complete, try to run it as little as possible.
     protected void initializeAndResetEncoders () throws InterruptedException
     {
@@ -144,11 +144,11 @@ public abstract class AutoBase extends MainRobotBase
         return 0; //Don't suggest that we increase movement power.
     }
 
-    /**** Range Sensor(s) ****/
+    /*--- Range Sensor(s) ---*/
     protected NiFTRangeSensor frontRangeSensor, sideRangeSensor;
 
 
-    /******** MOVEMENT POWER CONTROL ********/
+    /*------- MOVEMENT POWER CONTROL -------*/
     //Used to set drive move power initially.
     private double movementPower = 0;
     protected void startDrivingAt (double movementPower)
@@ -226,7 +226,7 @@ public abstract class AutoBase extends MainRobotBase
     }
 
 
-    /******** DRIVING METHODS ********/
+    /*------- DRIVING METHODS -------*/
     protected enum TerminationType {BOTTOM_ALPHA, RANGE_DIST, ENCODER_DIST}
 
     protected void drive (TerminationType terminationType, double stopVal, double movementPower, boolean... adjustments) throws InterruptedException
@@ -272,7 +272,7 @@ public abstract class AutoBase extends MainRobotBase
     }
 
 
-    /******** INITIALIZATION ********/
+    /*------ INITIALIZATION -------*/
     //Initialize everything required in autonomous that isn't initialized in RobotBase (sensors)
     @Override
     protected void initializeOpModeSpecificHardware () throws InterruptedException
@@ -301,7 +301,7 @@ public abstract class AutoBase extends MainRobotBase
     }
 
 
-    /******** CHILD CLASS INHERITANCE ********/
+    /*------- CHILD CLASS INHERITANCE -----*/
     //All child classes should have special instructions.
     protected abstract void driverStationSaysGO () throws InterruptedException;
 }

@@ -69,4 +69,9 @@ public class NiFTMusic
             mediaPlayer = null; //nullify the reference.
         }
     }
+
+    public static boolean playing()
+    {
+        return mediaPlayer != null;
+    }
 }

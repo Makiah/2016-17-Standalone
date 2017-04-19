@@ -31,8 +31,8 @@ public class Teleop extends MainRobotBase
         //Keep looping while opmode is active (waiting a hardware cycle after all of this is completed, just like loop())
         while (true)
         {
-            /**************************** CONTROLLER #1 ********************************/
-            /************** Direction Toggle **************/
+            /*----------------------- CONTROLLER #1 -----------------------*/
+            /*------------- Direction Toggle ------------*/
             if (!backwards)
             { // Driving forward
                 leftPower = -gamepad1.left_stick_y;
@@ -42,7 +42,7 @@ public class Teleop extends MainRobotBase
                 rightPower = gamepad1.left_stick_y;
             }
 
-            /************** Motor Speed Control **************/
+            /*-------------- Motor Speed Control -----------*/
             rightPower = Range.clip(rightPower, -1, 1);
             leftPower = Range.clip(leftPower, -1, 1);
 
@@ -50,7 +50,7 @@ public class Teleop extends MainRobotBase
             leftDrive.setDirectMotorPower (scaleInput(leftPower) * speedCoefficient);
             rightDrive.setDirectMotorPower (scaleInput(rightPower) * speedCoefficient);
 
-            /************** Cap Ball Drive Mode **************/
+            /*----------- Cap Ball Drive Mode ---------*/
             if (gamepad1.x) {
                 speedCoefficient = 0.7;
                 capBallMode = true;
@@ -72,19 +72,19 @@ public class Teleop extends MainRobotBase
                 frontButtonPusher.setToUpperLim ();
             }
 
-            /************** Clamp **************/
+            /*---------- Clamp ---------*/
             if (gamepad1.left_bumper || (gamepad2.left_bumper && capBallMode2))
                 capBallHolder.setServoPosition (capBallHolder.getServoPosition () + 0.05);
             else if (gamepad1.left_trigger > 0.5 || (gamepad2.left_trigger > 0.5 && capBallMode2))
                 capBallHolder.setServoPosition (capBallHolder.getServoPosition () - 0.01);
 
-            /************** Open Clamp **************/
+            /*------ Open Clamp ------*/
             if (gamepad1.back || gamepad2.back) {
                 capBallHolder.setToUpperLim ();
             }
 
-            /**************************** CONTROLLER #2 ********************************/
-            /************** Cap Ball Lift **************/
+            /*--------------------- CONTROLLER #2 --------------------*/
+            /*------------- Cap Ball Lift ---------------*/
             if (gamepad2.x) {
                 capBallMode2 = true;
             }
@@ -99,7 +99,7 @@ public class Teleop extends MainRobotBase
             else
                 lift.setPower (0.0);
 
-            /************** Harvester **************/
+            /*------------ Harvester ------------*/
             if (gamepad2.b) {
                 harvester.setRPS (harvesterMaxRPS); // Collect
             }
@@ -110,7 +110,7 @@ public class Teleop extends MainRobotBase
                 harvester.setRPS (0);
             }
 
-            /************** Flywheels **************/
+            /*------------- Flywheels -----------*/
             if (gamepad2.dpad_up) {
                 flywheels.setRPS (flywheelCoefficient * flywheelMaxRPS); // Shoot
             }
@@ -135,7 +135,7 @@ public class Teleop extends MainRobotBase
                 pressingFlywheelC = false;
             }
 
-            /************** Side Beacon Pushers **************/
+            /*-------------- Side Beacon Pushers ------------*/
             rightPusherPowerLeft = Range.clip(gamepad2.left_stick_x, -1, 1);
             rightPusherPowerRight = Range.clip(gamepad2.right_stick_x, -1, 1);
 
@@ -146,7 +146,7 @@ public class Teleop extends MainRobotBase
             else
                 rightButtonPusher.setServoPosition (0.5);
 
-            /************** Data Output **************/
+            /*----------- Data Output -----------*/
             teleopConsole.updateWith (
                     "Fly wheel power = " + flywheelCoefficient,
                     "Conversion " + flywheels.getRPSConversionFactor (),
@@ -156,8 +156,6 @@ public class Teleop extends MainRobotBase
             );
 
             NiFTFlow.pauseForSingleFrame ();
-
-            /******************** END OF LOOP ********************/
         }
     }
 
@@ -179,7 +177,7 @@ public class Teleop extends MainRobotBase
             index = 16;
         }
 
-        double dScale = 0.0;
+        double dScale;
         if (dVal < 0) {
             dScale = -scaleArray[index];
         } else {

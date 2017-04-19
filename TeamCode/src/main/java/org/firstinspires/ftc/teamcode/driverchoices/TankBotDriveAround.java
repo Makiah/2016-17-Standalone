@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.NiFTBase;
 import org.firstinspires.ftc.teamcode.console.NiFTConsole;
 import org.firstinspires.ftc.teamcode.hardware.NiFTInitializer;
+import org.firstinspires.ftc.teamcode.music.NiFTMusic;
 import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 //Add the teleop to the op mode register.
@@ -27,9 +28,7 @@ public class TankBotDriveAround extends NiFTBase
     // Called on initialization (once)
     protected void initializeHardware() throws InterruptedException
     {
-        //Make sure that the robot components are found and initialized correctly.
-        //This all happens during init()
-        /*************************** DRIVING MOTORS ***************************/
+        /*----------------- DRIVING MOTORS ---------------*/
         leftMotor = NiFTInitializer.initialize(DcMotor.class, "Left Motor");
         rightMotor = NiFTInitializer.initialize(DcMotor.class, "Right Motor");
         leftMotor.setDirection (DcMotorSimple.Direction.REVERSE);
@@ -50,20 +49,17 @@ public class TankBotDriveAround extends NiFTBase
     //All teleop controls are here.
     protected void driverStationSaysGO() throws InterruptedException
     {
-        //Normal mode variables
         double leftPower, rightPower;
         boolean backwards = false;
         long lastTimeBackTogglePressed = System.currentTimeMillis(),
                 lastTimeMusicTogglePressed = System.currentTimeMillis ();
         double currentTurretPosition = 0.5;
 
-        NiFTConsole.ProcessConsole processConsole = new NiFTConsole.ProcessConsole ("Tank Bot Output");
-
         //Keep looping while opmode is active (waiting a hardware cycle after all of this is completed, just like loop())
         while (opModeIsActive())
         {
-            /**************************** CONTROLLER #1 ********************************/
-            /************** Direction Toggle **************/
+            /*-------------------- CONTROLLER #1 ---------------------*/
+            /*-------------- Direction Toggle -------------*/
             if (!backwards)
             { // Driving forward
                 leftPower = gamepad1.left_stick_y;
@@ -73,7 +69,7 @@ public class TankBotDriveAround extends NiFTBase
                 rightPower = -gamepad1.left_stick_y;
             }
 
-            /************** Motor Speed Control **************/
+            /*------------- Motor Speed Control -------------*/
             rightPower = Range.clip(rightPower, -1, 1);
             leftPower = Range.clip(leftPower, -1, 1);
 
@@ -90,13 +86,13 @@ public class TankBotDriveAround extends NiFTBase
 
             if (gamepad1.y && (System.currentTimeMillis () - lastTimeMusicTogglePressed) > 500)
             {
-                if (mediaPlayer != null)
-                    StopPlayingAudio ();
+                if (NiFTMusic.playing())
+                    NiFTMusic.quit ();
                 else
-                    PlayAudio (DownloadedSongs.IMPERIAL_MARCH);
+                    NiFTMusic.play (NiFTMusic.DownloadedSongs.IMPERIAL_MARCH);
             }
 
-            /************** Turret Position **************/
+            /*-------------- Turret Position --------------*/
             if (turret != null)
             {
                 if (gamepad1.right_trigger > 0.5)
@@ -108,9 +104,7 @@ public class TankBotDriveAround extends NiFTBase
                 turret.setPosition(currentTurretPosition);
             }
 
-            processConsole.updateWith ("Right power = " + rightPower, "Music playing = " + (mediaPlayer != null));
-
-            /******************** END OF LOOP ********************/
+            /*---------------- END OF LOOP ---------------*/
 
             idle();
 
@@ -123,7 +117,7 @@ public class TankBotDriveAround extends NiFTBase
      * the robot more precisely at slower speeds.
      */
 
-    double scaleInput(double dVal)
+    private double scaleInput(double dVal)
     {
         double[] scaleArray = {0.0, 0.05, 0.09, 0.10, 0.12, 0.15, 0.18, 0.24,
                 0.30, 0.36, 0.43, 0.50, 0.60, 0.72, 0.85, 1.00, 1.00};
@@ -136,7 +130,7 @@ public class TankBotDriveAround extends NiFTBase
             index = 16;
         }
 
-        double dScale = 0.0;
+        double dScale;
         if (dVal < 0) {
             dScale = -scaleArray[index];
         } else {
@@ -144,63 +138,6 @@ public class TankBotDriveAround extends NiFTBase
         }
 
         return dScale;
-    }
-
-    /************ MEDIA PLAYER STUFF!!!!! ************/
-    protected enum DownloadedSongs
-    {
-        IMPERIAL_MARCH
-    }
-    private MediaPlayer mediaPlayer = null;
-    protected void PlayAudio(DownloadedSongs choice)
-    {
-        try
-        {
-            int selectedSong = com.qualcomm.ftcrobotcontroller.R.raw.imperialmarch;
-            switch (choice)
-            {
-                case IMPERIAL_MARCH:
-                    selectedSong = com.qualcomm.ftcrobotcontroller.R.raw.imperialmarch;
-                    break;
-            }
-            mediaPlayer = MediaPlayer.create(hardwareMap.appContext, selectedSong);
-            mediaPlayer.start();
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener()
-            {
-                public void onCompletion(MediaPlayer mediaPlayer1)
-                {
-                    mediaPlayer1.release();
-                }
-            });
-
-            NiFTConsole.outputNewSequentialLine ("Playing " + choice.toString());
-
-            NiFTFlow.pauseForMS (1000); //Give the MediaPlayer some time to initialize, and register that a song is being played.
-        }
-        catch (Exception e)
-        {
-            NiFTConsole.outputNewSequentialLine ("Error while attempting to play music.");
-            return;
-        }
-    }
-
-    //Used to make the media player stopEasyTask playing audio, and also to prevent excess memory allocation from being taken up.
-    protected void StopPlayingAudio()
-    {
-        if (mediaPlayer != null)
-        {
-            if (mediaPlayer.isPlaying())
-                mediaPlayer.stop(); //stopEasyTask playing
-            mediaPlayer.release(); //prevent resource allocation
-            mediaPlayer = null; //nullify the reference.
-        }
-    }
-
-    protected void driverStationSaysSTOP()
-    {
-        StopPlayingAudio ();
-        leftMotor.setPower(0);
-        rightMotor.setPower(0);
     }
 
 }

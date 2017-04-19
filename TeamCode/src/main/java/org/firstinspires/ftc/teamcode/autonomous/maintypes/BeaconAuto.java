@@ -261,7 +261,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         }
 
 
-        /******** STEP 3.5: SHOOT THE PARTICLES IF WE PICKED ANY UP ********/
+        /*------- STEP 3.5: SHOOT THE PARTICLES IF WE PICKED ANY UP ------*/
 
         //Stop the task.
         pickUpTask.stop();

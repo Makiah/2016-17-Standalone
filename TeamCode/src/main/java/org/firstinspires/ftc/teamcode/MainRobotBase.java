@@ -20,16 +20,14 @@ public abstract class MainRobotBase extends NiFTBase
 
     protected void initializeHardware () throws InterruptedException
     {
-        //Make sure that the robot components are found and initialized correctly.
-
-        /*************************** SERVOS ***************************/
+        /*----------------- SERVOS -------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up servos...");
         rightButtonPusher = new NiFTServo ("rightButtonPusher", 0.5);
         frontButtonPusher = new NiFTServo ("frontButtonPusher", .21, .84, .84);
         capBallHolder = new NiFTServo ("clamp", .02, .02, 1.0);
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
-        /*************************** DRIVING MOTORS ***************************/
+        /*-------------------- DRIVING MOTORS -------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up drive motors...");
         //The back motors are the ones that have functional encoders, while the front ones don't currently work.
         leftDrive = new NiFTMotorController ("Left Drive", "backLeft", "frontLeft").
@@ -44,7 +42,7 @@ public abstract class MainRobotBase extends NiFTBase
                 setAdjustmentSensitivityBounds (0.2);
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
-        /*************************** OTHER MOTORS AND SERVOS ***************************/
+        /*---------------------- OTHER MOTORS AND SERVOS -------------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up harvester...");
         harvester = new NiFTMotorController ("Harvester", "harvester").
                 setRPSConversionFactor (0.40).
