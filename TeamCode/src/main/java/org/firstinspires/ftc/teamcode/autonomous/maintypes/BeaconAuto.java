@@ -79,10 +79,10 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         boolean onBlueAlliance = (getAlliance () == Alliance.BLUE);
         int autonomousSign = (onBlueAlliance ? 1 : -1);
 
-        /******** STEP 1: SHOOT, DRIVE, TURN TO BE PARALLEL WITH WALL ********/
+        /*------- STEP 1: SHOOT, DRIVE, TURN TO BE PARALLEL WITH WALL --------*/
 
         //Start the flywheels so that PID has time to adjust them.
-        flywheels.setRPS (18.2);
+        flywheels.setRPS (9);
         flywheels.startPIDTask ();
 
         //Drive until we are just far enough from the cap ball to score reliably.
@@ -111,70 +111,46 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         //Drive to the wall and stop once a little ways away.
         NiFTConsole.outputNewSequentialLine ("Driving to the wall...");
-        drive(TerminationType.RANGE_DIST, (onBlueAlliance ? 34 : 37), BEACON_DP, true);
+        drive(TerminationType.RANGE_DIST, (onBlueAlliance ? 35 : 39), BEACON_DP, true);
 
         //Turn back to become parallel with the wall.
         NiFTConsole.outputNewSequentialLine ("Turning to become parallel to the wall...");
         turnToHeading (onBlueAlliance ? 0 : -180, TurnMode.BOTH, 3000);
 
+        //Extend pusher so that we are right up next to the wall.
+        NiFTConsole.outputNewSequentialLine ("Extending to become parallel to the wall.");
+        double distFromWall = sideRangeSensor.validDistCM (20, 2000); //Make sure valid.
+        int gapBetweenWallAndSensorApparatus = 12;
+        long extensionTime = (long) ((distFromWall - gapBetweenWallAndSensorApparatus) * 67);
+        rightButtonPusher.setToUpperLim ();
+        NiFTFlow.pauseForMS (extensionTime);
+        rightButtonPusher.setServoPosition (0.5);
+
         //For each of the two beacons.
         for (int currentBeacon = 1; currentBeacon <= 2; currentBeacon++)
         {
-            /******** STEP 2: FIND AND CENTER SELF ON BEACON ********/
+            /*------- STEP 2: FIND AND CENTER SELF ON BEACON --------*/
             //Set movement speed.
-            startDrivingAt (0.35 * autonomousSign);
+            startDrivingAt ((BEACON_DP - 0.05) * autonomousSign);
 
-            //Create the beacon viewing console.
-            NiFTConsole.ProcessConsole beaconViewerConsole = new NiFTConsole.ProcessConsole ("Beacon Viewer");
-
-            //Drive to the white line and stop once centered on it.
-            boolean aboutToSeeWhiteLine = false;
-            int currentAlpha = bottomColorSensor.sensor.alpha ();
-            while (currentAlpha <= 4)
+            //While we haven't gotten on the line and seen distinct colors (can't vary).
+            while (!(bottomColorSensor.sensor.alpha () <= 4 && ((option1Blue && option2Red) || (option1Red && option2Blue))))
             {
-                //Update bottom color sensor reading.
-                currentAlpha = bottomColorSensor.sensor.alpha ();
-
-                //Update color sensor states.
                 updateColorSensorStates ();
-
-                //Check if we are about to see the white line and slow down if true.
-                if (!aboutToSeeWhiteLine && (onBlueAlliance ? (option1Red || option1Blue) : (option2Red || option2Blue)))
-                {
-                    hardBrake (100); //Useful in order to slow down.
-                    startDrivingAt (BEACON_DP * autonomousSign);
-                    aboutToSeeWhiteLine = true;
-                }
-
-                //adjustDirectionBasedOnColorSensors ();
                 manuallyApplySensorAdjustments (true, true, true);
-
-                beaconViewerConsole.updateWith (
-                        "Looking for beacon " + currentBeacon,
-                        "Alpha is " + currentAlpha,
-                        "About to see white line = " + aboutToSeeWhiteLine
-                );
             }
-            beaconViewerConsole.destroy ();
 
             //Stop once centered on the beacon.
             hardBrake (100);
 
+            //Drive to re-center (drifted a bit probably).
+            drive(TerminationType.ENCODER_DIST, 30, -0.22);
 
-            /******** STEP 3: PRESS AND VERIFY THE BEACON!!!!! ********/
+
+            /*------- STEP 3: PRESS AND VERIFY THE BEACON!!!!! -------*/
 
             NiFTConsole.outputNewSequentialLine ("Ahoy there!  Beacon spotted!  Option 1 is " + (option1Blue ? "blue" : "red") + " and option 2 is " + (option2Blue ? "blue" : "red"));
 
-            //Extend the button pusher and the sensors until two distinct colors are seen.
-            NiFTConsole.outputNewSequentialLine ("Extending to see beacon...");
-            long startTime = System.currentTimeMillis ();
-            rightButtonPusher.setToUpperLim ();
-
-            while (!((option1Blue && option2Red) || (option2Blue && option1Red))) //Two possible distinct beacon combos.
-                NiFTFlow.pauseForSingleFrame ();
-
-            rightButtonPusher.setServoPosition (0.5); //Stop extending.
-            long timeTakenToSeeDistinctColors = System.currentTimeMillis () - startTime;
             NiFTConsole.outputNewSequentialLine ("Beacon found!");
 
             //While the beacon is not completely blue (this is the verification step).
@@ -194,21 +170,21 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                     NiFTConsole.outputNewSequentialLine ("Chose option 1");
                     //Use the option 1 button pusher.
                     drivePower = BEACON_DP * autonomousSign;
-                    driveDistance = (onBlueAlliance ? 120 : 90) + 20 * failedAttempts;
+                    driveDistance = (onBlueAlliance ? 90 : 60) + 20 * failedAttempts;
                 }
                 else if (option1Red && option2Blue)
                 {
                     NiFTConsole.outputNewSequentialLine ("Chose option 2");
                     //Use the option 2 button pusher.
                     drivePower = -BEACON_DP * autonomousSign;
-                    driveDistance = (onBlueAlliance ? 180 : 160) + 20 * failedAttempts;
+                    driveDistance = (onBlueAlliance ? 130 : 110) + 20 * failedAttempts;
                 }
                 else if (option1Blue ? (option1Red && option2Red) : (option1Blue && option2Blue))
                 {
                     NiFTConsole.outputNewSequentialLine ("Neither option is the correct color, toggling beacon!");
                     //Toggle beacon.
                     drivePower = BEACON_DP * autonomousSign;
-                    driveDistance = (onBlueAlliance ? 120 : 90) + 20 * failedAttempts;
+                    driveDistance = (onBlueAlliance ? 90 : 60) + 20 * failedAttempts;
                 }
                 else
                 {
@@ -221,22 +197,27 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 //Drive based on state determined previously.
                 drive (TerminationType.ENCODER_DIST, driveDistance, drivePower);
 
-                //Press the button (which uses the range sensor but pass in time taken)
-                double extendLength = sideRangeSensor.validDistCM (20, 1000) * 67 - timeTakenToSeeDistinctColors;
-                NiFTConsole.outputNewSequentialLine ("Extending the button pusher for " + extendLength + " ms.");
-
-                //Run the continuous rotation servo out to press, then back in.
-                rightButtonPusher.setToUpperLim ();
-                NiFTFlow.pauseForMS ((long) (extendLength));
-                rightButtonPusher.setToLowerLim ();
-                NiFTFlow.pauseForMS ((long) (extendLength - 200));
-                rightButtonPusher.setServoPosition (.5);
+                //If this is a reset run then try again.  7
+                if (failedAttempts != -1)
+                {
+                    //Run the continuous rotation servo out to press, then back in.
+                    rightButtonPusher.setToUpperLim ();
+                    NiFTFlow.pauseForMS (gapBetweenWallAndSensorApparatus * 67); //Those cm we excluded previously.
+                    rightButtonPusher.setToLowerLim ();
+                    NiFTFlow.pauseForMS (gapBetweenWallAndSensorApparatus * 67 - 300);
+                    rightButtonPusher.setServoPosition (.5);
+                }
 
                 //Drive back to the white line.
-                startDrivingAt (Math.signum (drivePower) * BEACON_DP);
-                while (bottomColorSensor.sensor.alpha () <= 4)
+                startDrivingAt (-1 * Math.signum (drivePower) * BEACON_DP);
+                while (!(bottomColorSensor.sensor.alpha () <= 4 && ((option2Blue || option2Red) && (option1Red || option1Blue))))
+                {
+                    updateColorSensorStates ();
                     manuallyApplySensorAdjustments (true, true);
-                hardBrake (100);
+                }
+
+                //Brake.
+                hardBrake (500);
 
                 //Update the number of trials completed so that we know the new drive distance and such.
                 failedAttempts++;
@@ -247,17 +228,11 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
             NiFTConsole.outputNewSequentialLine ("Success!  Beacon " + currentBeacon + " is completely blue.");
 
-            //Retract button pusher.
-            rightButtonPusher.setToLowerLim ();
-            startTime = System.currentTimeMillis ();
-            while (System.currentTimeMillis () - startTime < timeTakenToSeeDistinctColors)
-                NiFTFlow.pauseForSingleFrame ();
-            rightButtonPusher.setServoPosition (.5); //Stop extending.
-
             //Drive a bit forward from the white line to set up for the next step.
-            drive(TerminationType.ENCODER_DIST, 3000, -0.42 * autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
+            drive(TerminationType.ENCODER_DIST, 1000, 0.42 * autonomousSign, true);
+            hardBrake (200);
         }
-
+//Adham is cool
 
         /*------- STEP 3.5: SHOOT THE PARTICLES IF WE PICKED ANY UP ------*/
 

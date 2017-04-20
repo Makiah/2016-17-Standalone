@@ -16,20 +16,16 @@ public class ShootingDebugging extends AutoBase
         //Set the motor powers.
         flywheels.setRPS (19);
         flywheels.startPIDTask ();
-        harvester.setRPS (5);
-        harvester.startPIDTask ();
+        harvester.setDirectMotorPower (1);
+
+        NiFTConsole.ProcessConsole processConsole = new NiFTConsole.ProcessConsole ("Shooting Debugger");
 
         while (true)
         {
-            NiFTConsole.ProcessConsole processConsole = new NiFTConsole.ProcessConsole ("Shooting Debugger");
-
             processConsole.updateWith (
                     "F conversion " + flywheels.getRPSConversionFactor (),
-                    "H conversion " + harvester.getRPSConversionFactor (),
                     "F expected " + flywheels.getExpectedTicksSinceUpdate (),
-                    "F actual " + flywheels.getActualTicksSinceUpdate (),
-                    "H expected " + harvester.getExpectedTicksSinceUpdate (),
-                    "H actual " + harvester.getActualTicksSinceUpdate ()
+                    "F actual " + flywheels.getActualTicksSinceUpdate ()
             );
 
             NiFTFlow.pauseForSingleFrame ();

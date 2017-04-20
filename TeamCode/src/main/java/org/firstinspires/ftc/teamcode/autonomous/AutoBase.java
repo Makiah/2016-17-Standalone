@@ -230,11 +230,11 @@ public abstract class AutoBase extends MainRobotBase
     protected enum TerminationType {BOTTOM_ALPHA, RANGE_DIST, ENCODER_DIST}
     protected void drive (TerminationType terminationType, double stopVal, double movementPower, boolean... adjustments) throws InterruptedException
     {
+        NiFTConsole.ProcessConsole driveConsole = new NiFTConsole.ProcessConsole ("Driving");
+
         //Get values required for termination.
         int movementPowerSign = (int) (Math.signum (movementPower));
-        int initialDrivePosition = 0;
-        if (terminationType == TerminationType.ENCODER_DIST)
-            initialDrivePosition = getEncoderPosition ();
+        int desiredEncoderPosition = terminationType == TerminationType.ENCODER_DIST ? (int) (getEncoderPosition () + movementPowerSign * stopVal) : 0;
 
         //Start moving.
         startDrivingAt (movementPower);
@@ -257,17 +257,55 @@ public abstract class AutoBase extends MainRobotBase
                     break;
 
                 case RANGE_DIST:
-                    shouldTerminate = frontRangeSensor.validDistCM (255) < stopVal;
+                    double currentRangeVal = frontRangeSensor.validDistCM (255);
+                    shouldTerminate = currentRangeVal < stopVal;
+
+                    driveConsole.updateWith (
+                            "Current dist " + currentRangeVal,
+                            "Stopping at dist " + stopVal
+                    );
+
                     break;
 
                 case ENCODER_DIST:
-                    shouldTerminate = (initialDrivePosition + movementPowerSign * stopVal) * movementPowerSign >= getEncoderPosition () * movementPowerSign;
+                    /*
+                     * At 1000 trying to go to 300
+                     * power = -0.22 and dist = 700
+                     * initial = 1000
+                     * left = -1 * (1000 + -1 * 700) = -300
+                     * right = -1 * 1000
+                     * so -300 <= -1000 false
+                     *
+                     * At -1000 trying to get to -1300
+                     * power = -0.22 and dist = 300
+                     * initial = -1000
+                     * left = -1 * (-1000 + -1 * 300) = 1300
+                     * right = -1000 * -1
+                     * so 1300 <= 1000 false
+                     *
+                     * At 1000 trying to get to 1300
+                     * power = +1 and dist = 300
+                     * initial = 1000
+                     * left = 1 * (1000 + 1 * 300) = 1300
+                     * right = 1 * 1000 = 1000
+                     * so 1300 <= 1000
+                     */
+
+                    int currentEncoderPosition = getEncoderPosition ();
+                    shouldTerminate = desiredEncoderPosition * movementPowerSign <= currentEncoderPosition * movementPowerSign;
+
+                    driveConsole.updateWith (
+                            "Driving to drive position " + desiredEncoderPosition,
+                            "Current drive position = " + currentEncoderPosition
+                    );
                     break;
             }
         }
 
         //Become stationary.
         hardBrake (100);
+
+        driveConsole.destroy ();
     }
 
 

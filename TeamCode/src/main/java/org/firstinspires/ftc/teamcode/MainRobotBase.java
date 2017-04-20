@@ -47,7 +47,6 @@ public abstract class MainRobotBase extends NiFTBase
         harvester = new NiFTMotorController ("Harvester", "harvester").
                 setRPSConversionFactor (0.40).
                 setMotorDirection (DcMotorSimple.Direction.REVERSE);
-        harvester.resetEncoder ();
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
         NiFTConsole.outputNewSequentialLine ("Setting up flywheels...");
@@ -57,7 +56,6 @@ public abstract class MainRobotBase extends NiFTBase
                 setMotorDirection (DcMotor.Direction.REVERSE).
                 setAdjustmentSensitivity (.00001).
                 setAdjustmentSensitivityBounds (0.3);
-        flywheels.resetEncoder ();
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
         NiFTConsole.outputNewSequentialLine ("Setting up lift...");
