@@ -228,7 +228,6 @@ public abstract class AutoBase extends MainRobotBase
 
     /*------- DRIVING METHODS -------*/
     protected enum TerminationType {BOTTOM_ALPHA, RANGE_DIST, ENCODER_DIST}
-
     protected void drive (TerminationType terminationType, double stopVal, double movementPower, boolean... adjustments) throws InterruptedException
     {
         //Get values required for termination.

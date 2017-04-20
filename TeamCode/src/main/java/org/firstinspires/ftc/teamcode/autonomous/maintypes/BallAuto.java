@@ -15,8 +15,6 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
     {
         NiFTConsole.ProcessConsole settingsConsole = new NiFTConsole.ProcessConsole ("Current Settings");
 
-        super.driverStationSaysINITIALIZE ();
-
         long delay = 0;
         long lastDelayIncrementTime = 0;
 
@@ -71,7 +69,7 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
         if (parkOnCenterVortex)
         {
             NiFTConsole.outputNewSequentialLine ("Parking on center vortex.");
-            //driveForDistance (0.5, 1400);
+            drive (TerminationType.ENCODER_DIST, 1400, 0.5);
             return; //End prematurely
         }
 
@@ -79,7 +77,7 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
         {
             //Drive the remainder of the distance.
             NiFTConsole.outputNewSequentialLine ("Knock the cap ball off of the pedestal.");
-            //driveForDistance (0.5, 1800);
+            drive (TerminationType.ENCODER_DIST, 1800, 0.5);
 
             //Turn to face the ramp from the position that we drove.
             NiFTConsole.outputNewSequentialLine ("Turning to the appropriate heading.");
@@ -97,7 +95,7 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
 
         long startDriveTime = System.currentTimeMillis (); //Max time at 6 seconds.
         while (bottomColorSensor.sensor.red () <= 2.5 && (System.currentTimeMillis () - startDriveTime) < 6000)
-            manuallyApplySensorAdjustments (true, false, false);
+            manuallyApplySensorAdjustments (true);
 
         stopDriving ();
     }
