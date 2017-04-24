@@ -7,8 +7,8 @@ package org.firstinspires.ftc.teamcode.debugging;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.makiah.niftc.console.NiFTConsole;
+import org.makiah.niftc.threads.NiFTFlow;
 
 @Autonomous(name = "Sensor Debug", group = "Utility Group")
 
@@ -38,10 +38,10 @@ public class SensorDebug extends AutoBase
                     "Heading: " + gyroscope.getValidGyroHeading(),
                     "Front Range Sensor: " + frontRangeSensor.sensor.cmUltrasonic (),
                     "Back Range Sensor: " + sideRangeSensor.sensor.cmUltrasonic (),
-                    "Harvester encoder: " + harvester.ENCODER_MOTOR.getCurrentPosition (),
-                    "Flywheel encoder: " + flywheels.ENCODER_MOTOR.getCurrentPosition (),
-                    "L motor encoder: " + leftDrive.ENCODER_MOTOR.getCurrentPosition (),
-                    "R motor encoder: " + rightDrive.ENCODER_MOTOR.getCurrentPosition ()
+                    "Harvester encoder: " + harvester.encoderMotor.getCurrentPosition (),
+                    "Flywheel encoder: " + flywheels.encoderMotor.getCurrentPosition (),
+                    "L motor encoder: " + leftDrive.encoderMotor.getCurrentPosition (),
+                    "R motor encoder: " + rightDrive.encoderMotor.getCurrentPosition ()
             );
 
             NiFTFlow.pauseForSingleFrame ();

@@ -1,3 +1,11 @@
+package org.firstinspires.ftc.teamcode.autonomous.maintypes;
+
+import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
+import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
+import org.makiah.niftc.console.NiFTConsole;
+import org.makiah.niftc.threads.NiFTFlow;
+import org.makiah.niftc.threads.NiFTTask;
+
 /**
  * This class is the base class for red and blue beacon autonomouses.
  *
@@ -7,19 +15,10 @@
  *
  * Threads enable adjusting drives and such without the need for constantly calling a single method.  Crash prone though.
  */
-
-package org.firstinspires.ftc.teamcode.autonomous.maintypes;
-
-import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
-import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.threads.NiFTAsyncTask;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
-
 public abstract class BeaconAuto extends AutoBase implements OnAlliance
 {
     //The task which will be used to control harvesting particles while we drive.
-    private final class PickUpAndAutoRejectParticles extends NiFTAsyncTask
+    private final class PickUpAndAutoRejectParticles extends NiFTTask
     {
         public PickUpAndAutoRejectParticles()
         {
@@ -29,7 +28,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         private int pickedUpParticles = 0;
 
         @Override
-        protected void onBeginTask () throws InterruptedException
+        protected void onDoTask () throws InterruptedException
         {
             //Set initial harvester power.
             harvester.setDirectMotorPower (.8);

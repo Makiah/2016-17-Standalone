@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.makiah.niftc.console.NiFTConsole;
+import org.makiah.niftc.threads.NiFTFlow;
 
 public abstract class BallAuto extends AutoBase implements OnAlliance
 {

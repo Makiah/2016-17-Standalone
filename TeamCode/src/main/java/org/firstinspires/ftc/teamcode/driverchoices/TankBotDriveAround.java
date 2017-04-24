@@ -1,18 +1,14 @@
 package org.firstinspires.ftc.teamcode.driverchoices;
 
-import android.media.MediaPlayer;
-
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.NiFTBase;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.hardware.NiFTInitializer;
-import org.firstinspires.ftc.teamcode.music.NiFTMusic;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.makiah.niftc.NiFTBase;
+import org.makiah.niftc.hardware.NiFTInitializer;
+import org.makiah.niftc.music.NiFTMusic;
 
 //Add the teleop to the op mode register.
 @TeleOp(name="TankBot Drive", group="TankBot Group")
@@ -89,7 +85,7 @@ public class TankBotDriveAround extends NiFTBase
                 if (NiFTMusic.playing())
                     NiFTMusic.quit ();
                 else
-                    NiFTMusic.play (NiFTMusic.DownloadedSongs.IMPERIAL_MARCH);
+                    NiFTMusic.play (NiFTMusic.AudioFiles.IMPERIAL_MARCH);
             }
 
             /*-------------- Turret Position --------------*/

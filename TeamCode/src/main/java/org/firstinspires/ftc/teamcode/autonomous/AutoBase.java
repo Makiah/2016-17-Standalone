@@ -1,26 +1,26 @@
-/**
- * Initializes autonomous-specific hardware, with just sensors.  Also includes driving methods.
- */
-
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.MainRobotBase;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.threads.NiFTAsyncTask;
-import org.firstinspires.ftc.teamcode.hardware.*;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.makiah.niftc.console.NiFTConsole;
+import org.makiah.niftc.hardware.NiFTColorSensor;
+import org.makiah.niftc.hardware.NiFTGyroSensor;
+import org.makiah.niftc.hardware.NiFTRangeSensor;
+import org.makiah.niftc.threads.NiFTFlow;
+import org.makiah.niftc.threads.NiFTTask;
 
-//For added simplicity while coding autonomous with the new FTC system. Utilizes inheritance and polymorphism.
+/**
+ * Initializes autonomous-specific hardware, with just sensors.  Also includes driving methods.
+ */
 public abstract class AutoBase extends MainRobotBase
 {
-    /******** SENSOR STUFF ********/
+    /*------- SENSOR STUFF -------*/
 
-    /**** Range Sensors ****/
+    /*--- Range Sensors ---*/
     protected NiFTRangeSensor frontRangeSensor, sideRangeSensor;
 
-    /**** Color Sensors (3) ****/
+    /*--- Color Sensors (3) ---*/
     protected NiFTColorSensor option1ColorSensor, option2ColorSensor, bottomColorSensor, particleColorSensor;
     protected boolean option1Red, option2Red, option1Blue, option2Blue;
 
@@ -33,13 +33,13 @@ public abstract class AutoBase extends MainRobotBase
         option2Red = option2ColorSensor.sensor.red () >= 3;
     }
 
-    /**** Gyro ****/
+    /*--- Gyro ---*/
     protected NiFTGyroSensor gyroscope;
 
-    /******** Robot Driving ********/
+    /*------ Robot Driving -----*/
     private int getRobotEncoderPosition ()
     {
-        return (int) ((leftDrive.ENCODER_MOTOR.getCurrentPosition () + rightDrive.ENCODER_MOTOR.getCurrentPosition ()) / 2.0);
+        return (int) ((leftDrive.encoderMotor.getCurrentPosition () + rightDrive.encoderMotor.getCurrentPosition ()) / 2.0);
     }
 
     protected enum PowerUnits
@@ -57,7 +57,7 @@ public abstract class AutoBase extends MainRobotBase
     protected enum SensorStopType { Distance, Ultrasonic, BottomColorAlpha }
 
     //A new instance is instantiated upon starting a new drive.
-    protected final class SelfAdjustingDriveTask extends NiFTAsyncTask
+    protected final class SelfAdjustingDriveTask extends NiFTTask
     {
         private final double RPS;
         private final boolean useRangeSensor;
@@ -75,7 +75,7 @@ public abstract class AutoBase extends MainRobotBase
         }
 
         @Override
-        protected void onBeginTask () throws InterruptedException
+        protected void onDoTask () throws InterruptedException
         {
             leftDrive.startPIDTask ();
             rightDrive.startPIDTask ();
@@ -267,7 +267,7 @@ public abstract class AutoBase extends MainRobotBase
         NiFTFlow.pauseForMS (msDelay);
     }
 
-    /******** INITIALIZATION ********/
+    /*------ INITIALIZATION ------*/
     //Initialize everything required in autonomous that isn't initialized in MainRobotBase (sensors)
     @Override
     protected void initializeOpModeSpecificHardware () throws InterruptedException
@@ -298,7 +298,7 @@ public abstract class AutoBase extends MainRobotBase
     }
 
 
-    /******** CHILD CLASS INHERITANCE ********/
+    /*-------- CHILD CLASS INHERITANCE ------*/
     //All child classes should have special instructions.
     protected abstract void driverStationSaysGO () throws InterruptedException;
 }

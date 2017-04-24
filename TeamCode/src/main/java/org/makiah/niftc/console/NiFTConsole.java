@@ -1,33 +1,39 @@
-/**
- * This console supports private process consoles and sequential data, which is super important for programmers to observe (believe me i know)
- */
-
-package org.firstinspires.ftc.teamcode.console;
+package org.makiah.niftc.console;
 
 import android.os.AsyncTask;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.makiah.niftc.NiFTBase;
+import org.makiah.niftc.threads.NiFTFlow;
 
 import java.util.ArrayList;
 
+/**
+ * The NiFTConsole is an easy way to visualize a large number of tasks in parallel without having to rely on super quick vision or updating techniques.  It also supports sequential steps in the same window.
+ *
+ * This console uses a task to update its content so that it isn't jumpy when displayed on the driver station.
+ */
 public class NiFTConsole
 {
-    private static Telemetry mainTelemetry;
-    public static void initializeWith (Telemetry someTelemetry)
+    /**
+     * Resets the entire console with empty content.
+     */
+    public static void reset ()
     {
-        mainTelemetry = someTelemetry;
+        //Initialize required components.
         sequentialConsoleData = new ArrayList<> ();
         privateProcessConsoles = new ArrayList<> ();
 
+        //Will stop when stop requested.
         startConsoleUpdater ();
     }
 
-    /*** USE TO OUTPUT DATA IN A SLIGHTLY BETTER WAY THAT LINEAR OP MODES PROVIDE ***/
+    /*-- USE TO OUTPUT DATA IN A SLIGHTLY BETTER WAY THAT LINEAR OP MODES PROVIDE --*/
     private static ArrayList<String> sequentialConsoleData; //Lines being added and removed.
-    private static int maxSequentialLines = 13;
     public static void outputNewSequentialLine(String newLine)
     {
+        final int maxSequentialLines = 13;
+
         //Add new line at beginning of the lines.
         sequentialConsoleData.add(0, newLine);
         //If there is more than 5 lines there, remove one.
@@ -41,7 +47,9 @@ public class NiFTConsole
         sequentialConsoleData.add (0, result);
     }
 
-    //Private process data.
+    /**
+     * To get a private process console, create a new NiFTConsole.ProcessConsole(<name here>) and then run updateWith() to provide new content.
+     */
     private static ArrayList <ProcessConsole> privateProcessConsoles;
     public static class ProcessConsole
     {
@@ -68,7 +76,9 @@ public class NiFTConsole
         public void revive() { privateProcessConsoles.add(this); }
     }
 
-    //The console automatically updates itself, so that rebuild() isn't called every 10 ms.
+    /**
+     * The task which updates the console at a fairly slow rate but your eye can't tell the difference.
+     */
     private static class ConsoleUpdater extends AsyncTask <Void, Void, Void>
     {
         @Override
@@ -115,8 +125,13 @@ public class NiFTConsole
         }
     }
 
+    /**
+     * Rebuilds the whole console (call minimally, allow the task to take care of it.)
+     */
     public static void rebuildConsole()
     {
+        final Telemetry mainTelemetry = NiFTBase.opModeInstance.telemetry;
+
         if (mainTelemetry != null)
         {
             //Clear all lines.

@@ -1,17 +1,17 @@
-/**
- * This base class contains the robot initialization steps for hardware used in both autonomous and teleop.
- */
-
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.hardware.NiFTInitializer;
-import org.firstinspires.ftc.teamcode.hardware.NiFTMotorController;
-import org.firstinspires.ftc.teamcode.hardware.NiFTServo;
+import org.makiah.niftc.NiFTBase;
+import org.makiah.niftc.console.NiFTConsole;
+import org.makiah.niftc.hardware.NiFTInitializer;
+import org.makiah.niftc.hardware.NiFTMotorController;
+import org.makiah.niftc.hardware.NiFTServo;
 
+/**
+ * This base class contains the robot initialization steps for hardware used in both autonomous and teleop.
+ */
 public abstract class MainRobotBase extends NiFTBase
 {
     /*** CONFIGURE ALL ROBOT ELEMENTS HERE ***/
@@ -25,7 +25,7 @@ public abstract class MainRobotBase extends NiFTBase
     protected void initializeHardware () throws InterruptedException
     {
         //Make sure that the robot components are found and initialized correctly.
-        /*************************** DRIVING MOTORS ***************************/
+        /*----------- DRIVING MOTORS ------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up drive motors...");
 
         //The back motors are the ones that have functional encoders, while the front ones don't currently work.
@@ -42,7 +42,7 @@ public abstract class MainRobotBase extends NiFTBase
 
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
-        /*************************** OTHER MOTORS AND SERVOS ***************************/
+        /*------------------ OTHER MOTORS AND SERVOS -------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up harvester...");
         harvester = new NiFTMotorController ("Harvester", "harvester").
                 setRPSConversionFactor (0.40).

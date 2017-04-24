@@ -1,34 +1,38 @@
-/**
- * This code encapsulates the range sensor and enables the user to guarantee that the value returned is valid and not just a sensor blip (often misfires and gets 255 when the dist is less)
- */
-
-package org.firstinspires.ftc.teamcode.hardware;
+package org.makiah.niftc.hardware;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+/**
+ * This code encapsulates the range sensor and enables the user to guarantee that the value returned is valid and not just a sensor blip (often misfires and gets 255 when the dist is less)
+ */
 public class NiFTRangeSensor
 {
     public final ModernRoboticsI2cRangeSensor sensor;
-    public NiFTRangeSensor (String servoName, int i2cAddress)
+    public NiFTRangeSensor (String rangeSensorName, int i2cAddress)
     {
-        sensor = NiFTInitializer.initialize (ModernRoboticsI2cRangeSensor.class, servoName);
+        sensor = NiFTInitializer.initialize (ModernRoboticsI2cRangeSensor.class, rangeSensorName);
 
         sensor.setI2cAddress (I2cAddr.create8bit (i2cAddress));
     }
 
+    /**
+     * If false, the robot needs to be power cycled.
+     */
     public boolean returningValidOutput()
     {
         return !(sensor.getDistance (DistanceUnit.CM) < 1.0);
     }
 
-    //Since sometimes the range sensor will return 255 at longer distances, this code obtains a more realistic value.
-    public double validDistCM(double defaultVal)
-    {
-        return validDistCM (defaultVal, 0);
-    }
+    /**
+     * This method enables the sensor to work for a while to try to find a valid value (such as finding distances just at the range of its ability to detect ultrasonic waves.  Makes sure that a valid value is received.
+     *
+     * @param defaultVal The value which is returned if it still can't find a good value.
+     * @param maxTimePermitted The time in ms that it has to look for a good value.
+     * @return
+     */
     public double validDistCM(double defaultVal, long maxTimePermitted)
     {
         double ultrasonicDist = sensor.cmUltrasonic ();
@@ -50,5 +54,11 @@ public class NiFTRangeSensor
         }
 
         return ultrasonicDist;
+    }
+
+
+    public double validDistCM(double defaultVal)
+    {
+        return validDistCM (defaultVal, 0);
     }
 }

@@ -1,33 +1,37 @@
-/**
- * This opmode improvement class comes with error handling and a number of other improvements.
- */
-
-package org.firstinspires.ftc.teamcode;
+package org.makiah.niftc;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.hardware.NiFTInitializer;
-import org.firstinspires.ftc.teamcode.music.NiFTMusic;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.makiah.niftc.console.NiFTConsole;
+import org.makiah.niftc.music.NiFTMusic;
+import org.makiah.niftc.threads.NiFTFlow;
 
+/**
+ * NiFTBase is the class from which all user OpModes should inherit.  With advanced error handling, it takes care of the scenarios in which the user requests an early stop, fails to take an error into account, etc.
+ */
 public abstract class NiFTBase extends LinearOpMode
 {
+    /**
+     * Useful for other files which require custom initialization steps or components from this op mode which they cannot otherwise obtain.
+     */
+    public static LinearOpMode opModeInstance;
+
+    /**
+     * runOpMode() is the method called by LinearOpMode to start the program, but is really low-level.  What this method does is split the sequence into a set of steps which every autonomous program should include, while also observing errors and either stopping the code or outputting them based on their severity.
+     *
+     * @throws InterruptedException
+     */
     @Override
     public void runOpMode () throws InterruptedException
     {
         try
         {
-            //Comment out as desired, but then you can't use the component.
-            NiFTInitializer.setHardwareMap (hardwareMap);
-            NiFTFlow.initializeWithOpMode (this);
-            NiFTConsole.initializeWith (telemetry);
-            NiFTMusic.initializeWith (hardwareMap.appContext);
-            NiFTInitializer.setHardwareMap (hardwareMap);
+            //Classes such as NiFTMusic require this so that they can get the context they require.
+            opModeInstance = this;
+            NiFTConsole.reset ();
 
             //REQUIRED in child classes.
             initializeHardware ();
-            NiFTConsole.outputNewSequentialLine ("Hardware Initialization Complete!");
 
             //May be used in different programs.
             driverStationSaysINITIALIZE ();
@@ -38,10 +42,10 @@ public abstract class NiFTBase extends LinearOpMode
             //This is where the child classes mainly differ in their instructions.
             driverStationSaysGO ();
         }
-        catch (InterruptedException e) {/**/} //If this is caught, then the user requested program stop.
+        catch (InterruptedException e) {} //If this is caught, then the user requested program stop.
         catch (Exception e) //If this is caught, it wasn't an InterruptedException and wasn't requested, so the user is notified.
         {
-            NiFTConsole.outputNewSequentialLine ("UH OH!  A fatal error was just thrown!");
+            NiFTConsole.outputNewSequentialLine ("UH OH!  An error was just thrown!");
             NiFTConsole.outputNewSequentialLine (e.getMessage ());
             NiFTConsole.outputNewSequentialLine ("Will end upon tapping stop...");
 
@@ -51,7 +55,7 @@ public abstract class NiFTBase extends LinearOpMode
                 while (true)
                     NiFTFlow.pauseForSingleFrame ();
             }
-            catch (InterruptedException e2) {/**/} //The user has read the message and stops the program.
+            catch (InterruptedException e2) {} //The user has read the message and stops the program.
         }
         finally //Occurs after all possible endings.
         {
@@ -63,17 +67,10 @@ public abstract class NiFTBase extends LinearOpMode
     /**
      * Each method below are the main methods with which you can run your OpModes.  This enables quick and easy access to required methods.  Edit at will, but be careful to avoid messing with the exceptions too much.
      *
-     * InterruptedExceptions indicate from NiFTFlow that the stop was requested.
+     * Those which are abstract must be overridden in child classes with actual code.  Those which are not are optionally modifiable.
      */
-    //Required overload.
     protected void initializeHardware () throws InterruptedException {};
-
-    //Optional overload.
     protected void driverStationSaysINITIALIZE () throws InterruptedException {}
-
-    //Required overload.
     protected abstract void driverStationSaysGO () throws InterruptedException;
-
-    //Optional overload.
     protected void driverStationSaysSTOP () {}
 }

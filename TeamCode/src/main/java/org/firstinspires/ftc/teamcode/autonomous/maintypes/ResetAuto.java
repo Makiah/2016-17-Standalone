@@ -6,10 +6,10 @@ package org.firstinspires.ftc.teamcode.autonomous.maintypes;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.NiFTBase;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.hardware.NiFTMotorController;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.makiah.niftc.NiFTBase;
+import org.makiah.niftc.console.NiFTConsole;
+import org.makiah.niftc.hardware.NiFTMotorController;
+import org.makiah.niftc.threads.NiFTFlow;
 
 public abstract class ResetAuto extends NiFTBase
 {

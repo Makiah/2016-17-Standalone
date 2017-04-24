@@ -1,42 +1,48 @@
-/**
- * This code enables the creation of AsyncTasks easily, which is required for advanced robot functionality.
- */
-
-package org.firstinspires.ftc.teamcode.threads;
+package org.makiah.niftc.threads;
 
 import android.os.AsyncTask;
 
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.makiah.niftc.console.NiFTConsole;
 
-public abstract class NiFTAsyncTask extends AsyncTask <Void, Void, Void>
+/**
+ * NiFTTask is an easier method of working with AsyncTasks, which provides a convenient process console and a bunch of other functionality to the table for an opmode which requires a bunch of advanced tooling.
+ */
+public abstract class NiFTTask extends AsyncTask <Void, Void, Void>
 {
-    //Creates a task with the given NAME, and creates a new process console for the task.
-    private final String taskName;
-    protected final NiFTConsole.ProcessConsole processConsole;
-    //Default constructor, initializes with default NAME.
-    public NiFTAsyncTask()
+    public final String taskName;
+    public final NiFTConsole.ProcessConsole processConsole;
+    /**
+     * Creates a task with a given name and a console with that same name.
+     */
+    public NiFTTask ()
     {
         this("Unnamed NiFT Task");
     }
-    public NiFTAsyncTask (String taskName)
+    public NiFTTask (String taskName)
     {
         this.taskName = taskName;
         processConsole = new NiFTConsole.ProcessConsole (taskName);
     }
 
     /**
-     * Runs the onBeginTask() method while catching potential InterruptedExceptions, which indicate that the user has requested a stop which was thrown in NiFTFlow.
+     * Runs the onDoTask() method while catching potential InterruptedExceptions, which indicate that the user has requested a stop which was thrown in NiFTFlow.
      *
      * Runs the onQuitAndDestroyConsole() method on catching an InterruptedException, which destroys the process console and ends the program.
+     *
+     * @param params can be safely ignored.
      */
     @Override
     protected Void doInBackground (Void... params)
     {
         try
         {
-            onBeginTask ();
+            onDoTask ();
         }
         catch (InterruptedException e) //Upon stop requested by NiFTFlow
+        {
+            NiFTConsole.outputNewSequentialLine (taskName + " task was stopped!");
+        }
+        finally
         {
             onQuitAndDestroyConsole ();
         }
@@ -44,14 +50,21 @@ public abstract class NiFTAsyncTask extends AsyncTask <Void, Void, Void>
         return null;
     }
 
+    /**
+     * When the stop() method is called, the doInBackground method halts and onCancelled is called, which causes console destruction and task end.
+     */
     @Override
     protected void onCancelled ()
     {
         onQuitAndDestroyConsole ();
     }
 
-    //Must be overriden.
-    protected abstract void onBeginTask () throws InterruptedException;
+    /**
+     * Inherit this method in child classes to actually accomplish something during your task.
+     *
+     * @throws InterruptedException
+     */
+    protected abstract void onDoTask () throws InterruptedException;
 
     /**
      * Used solely in this class, used to destroy the created process console and THEN
@@ -62,17 +75,15 @@ public abstract class NiFTAsyncTask extends AsyncTask <Void, Void, Void>
         onQuitTask ();
         processConsole.destroy ();
     }
-    //You can optionally choose whether to implement this method in your derived classes.
+
+    /**
+     * Override this method if you want to do something when your task ends (regardless of whether it was cancelled or finished on its own).
+     */
     protected void onQuitTask () {}
 
     /**
      * run() attempts to run the program in a try-catch block, and in the event of an
      * error, stops the attempt and returns an error to the user.
-     *
-     * stop() attempts to stop the program in a similar manner.
-     *
-     * Example scenarios of error could be when the user has already run a task instance
-     * and has to create a new one, or cancelling a cancelled task.
      */
     public void run()
     {
@@ -87,6 +98,9 @@ public abstract class NiFTAsyncTask extends AsyncTask <Void, Void, Void>
             NiFTConsole.outputNewSequentialLine ("Proceeding normally.");
         }
     }
+    /**
+     * Stop attempts to cancel the given task, and reports an error if it cannot.
+     */
     public void stop()
     {
         try
