@@ -1,3 +1,7 @@
+/**
+ * This opmode improvement class comes with error handling and a number of other improvements.
+ */
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -19,6 +23,7 @@ public abstract class NiFTBase extends LinearOpMode
             NiFTFlow.initializeWithOpMode (this);
             NiFTConsole.initializeWith (telemetry);
             NiFTMusic.initializeWith (hardwareMap.appContext);
+            NiFTInitializer.setHardwareMap (hardwareMap);
 
             //REQUIRED in child classes.
             initializeHardware ();
@@ -36,7 +41,7 @@ public abstract class NiFTBase extends LinearOpMode
         catch (InterruptedException e) {/**/} //If this is caught, then the user requested program stop.
         catch (Exception e) //If this is caught, it wasn't an InterruptedException and wasn't requested, so the user is notified.
         {
-            NiFTConsole.outputNewSequentialLine ("UH OH!  An error was just thrown!");
+            NiFTConsole.outputNewSequentialLine ("UH OH!  A fatal error was just thrown!");
             NiFTConsole.outputNewSequentialLine (e.getMessage ());
             NiFTConsole.outputNewSequentialLine ("Will end upon tapping stop...");
 

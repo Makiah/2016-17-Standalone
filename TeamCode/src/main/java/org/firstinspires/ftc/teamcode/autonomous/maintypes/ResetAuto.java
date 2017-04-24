@@ -1,3 +1,7 @@
+/**
+ * This reset auto enables the user to be lazy and drive the robot back to the original starting position without getting up :P
+ */
+
 package org.firstinspires.ftc.teamcode.autonomous.maintypes;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;

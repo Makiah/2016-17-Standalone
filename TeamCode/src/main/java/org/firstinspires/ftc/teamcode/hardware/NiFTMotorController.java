@@ -1,53 +1,50 @@
-package org.firstinspires.ftc.teamcode.hardware;
+/**
+ * This class controls the advanced functionality we require while using makeshift PID.
+ */
 
-import android.os.AsyncTask;
+package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
 import org.firstinspires.ftc.teamcode.threads.NiFTAsyncTask;
 import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 //My own take on PID, not great but it works
 public class NiFTMotorController
 {
-    //Only certain motors have encoders on them, so the linkedMotor object is implemented.
-    public final String name;
-    public final DcMotor encoderMotor, linkedMotor;
+    //Only certain motors have encoders on them, so the LINKED_MOTOR object is implemented.
+    public final String NAME;
+    public final DcMotor ENCODER_MOTOR, LINKED_MOTOR;
 
     //Initialization steps
-    public NiFTMotorController (String name, String encoderMotorName)
+    public NiFTMotorController (String NAME, String encoderMotorName)
     {
-        this (name, encoderMotorName, null);
+        this (NAME, encoderMotorName, null);
     }
-
-    public NiFTMotorController (String name, String encoderMotorName, String linkedMotorName)
+    public NiFTMotorController (String NAME, String encoderMotorName, String linkedMotorName)
     {
-        this.name = name;
+        this.NAME = NAME;
 
-        this.encoderMotor = NiFTInitializer.initialize (DcMotor.class, encoderMotorName);
+        this.ENCODER_MOTOR = NiFTInitializer.initialize (DcMotor.class, encoderMotorName);
         if (linkedMotorName != null)
-            this.linkedMotor = NiFTInitializer.initialize (DcMotor.class, linkedMotorName);
+            this.LINKED_MOTOR = NiFTInitializer.initialize (DcMotor.class, linkedMotorName);
         else
-            this.linkedMotor = null;
+            this.LINKED_MOTOR = null;
 
         resetEncoder ();
     }
 
     //Initial conversion factor, will be changed a LOT through the course of the program.
     private double rpsConversionFactor = .25;
-
     public double getRPSConversionFactor () //Primarily for debugging.
     {
         return rpsConversionFactor;
     }
-
     public NiFTMotorController setRPSConversionFactor (double rpsConversionFactor)
     {
-        //Bounds are 0.005 to 5, since greater than that would have to be a glitch.
-        this.rpsConversionFactor = Range.clip (rpsConversionFactor, 0.005, 5);
+        this.rpsConversionFactor = rpsConversionFactor;
         return this;
     }
 
@@ -63,7 +60,6 @@ public class NiFTMotorController
             this.encoderTicksPerRevolution = encoderTicksPerRevolution;
         }
     }
-
     private MotorType motorType = MotorType.NeverRest40;
 
     public NiFTMotorController setMotorType (MotorType motorType)
@@ -74,16 +70,15 @@ public class NiFTMotorController
 
     public NiFTMotorController setMotorDirection (DcMotorSimple.Direction direction)
     {
-        encoderMotor.setDirection (direction);
-        if (linkedMotor != null)
-            linkedMotor.setDirection (direction);
+        ENCODER_MOTOR.setDirection (direction);
+        if (LINKED_MOTOR != null)
+            LINKED_MOTOR.setDirection (direction);
 
         return this;
     }
 
     //Adjustment sensitivity.
     private double sensitivity = .00002;
-
     public NiFTMotorController setAdjustmentSensitivity (double sensitivity)
     {
         this.sensitivity = sensitivity;
@@ -92,7 +87,6 @@ public class NiFTMotorController
 
     //Bounds for adjustment
     private double sensitivityBound = .5;
-
     public NiFTMotorController setAdjustmentSensitivityBounds (double sensitivityBound)
     {
         this.sensitivityBound = sensitivityBound;
@@ -101,7 +95,6 @@ public class NiFTMotorController
 
     //Refresh rate.
     private long refreshRate = 50;
-
     public NiFTMotorController setRefreshRate (long refreshRate)
     {
         this.refreshRate = refreshRate;
@@ -117,7 +110,7 @@ public class NiFTMotorController
         {
             try
             {
-                encoderMotor.setMode (DcMotor.RunMode.RUN_USING_ENCODER);
+                ENCODER_MOTOR.setMode (DcMotor.RunMode.RUN_USING_ENCODER);
                 NiFTFlow.pauseForMS (100 + additionalTime);
                 doneSuccessfully = true;
             } catch (Exception e)
@@ -135,7 +128,7 @@ public class NiFTMotorController
         {
             try
             {
-                encoderMotor.setMode (DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                ENCODER_MOTOR.setMode (DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 NiFTFlow.pauseForMS (100 + additionalTime);
                 doneSuccessfully = true;
             } catch (Exception e)
@@ -152,16 +145,14 @@ public class NiFTMotorController
         {
             try
             {
-                encoderMotor.setMode (DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                ENCODER_MOTOR.setMode (DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 NiFTFlow.pauseForMS (100 + additionalTime);
                 doneSuccessfully = true;
-            }
-            catch (InterruptedException e)
+            } catch (Exception e)
             {
-                return;
-            }
-            catch (Exception e)
-            {
+                if (e instanceof InterruptedException)
+                    return;
+
                 additionalTime += 20;
             }
         }
@@ -170,12 +161,9 @@ public class NiFTMotorController
     /******* THREADING *********/
     private final class PIDTask extends NiFTAsyncTask
     {
-        private final NiFTConsole.ProcessConsole pidConsole;
-
         public PIDTask ()
         {
-            super(name + " PID");
-            pidConsole = new NiFTConsole.ProcessConsole (name + " PID Console");
+            super (NAME + " PID");
         }
 
         @Override
@@ -187,7 +175,7 @@ public class NiFTMotorController
                 {
                     updateMotorPowerWithPID ();
 
-                    pidConsole.updateWith (
+                    processConsole.updateWith (
                             "Current RPS conversion = " + rpsConversionFactor,
                             "Expected = " + getExpectedTicksSinceUpdate (),
                             "Actual = " + getActualTicksSinceUpdate ()
@@ -196,12 +184,6 @@ public class NiFTMotorController
 
                 NiFTFlow.pauseForMS (30);
             }
-        }
-
-        @Override
-        protected void onQuitTask ()
-        {
-            pidConsole.destroy ();
         }
     }
 
@@ -212,7 +194,7 @@ public class NiFTMotorController
         if (pidInstance == null)
         {
             pidInstance = new PIDTask ();
-            pidInstance.run ();
+            pidInstance.run();
         }
     }
 
@@ -263,10 +245,10 @@ public class NiFTMotorController
         {
             expectedTicksSinceUpdate = expectedTicksPerSecond * ((System.currentTimeMillis () - lastAdjustTime) / 1000.0);
 
-            actualTicksSinceUpdate = encoderMotor.getCurrentPosition () - previousMotorPosition;
+            actualTicksSinceUpdate = ENCODER_MOTOR.getCurrentPosition () - previousMotorPosition;
 
             //Sensitivity is the coefficient below, and bounds are .5 and -.5 so that momentary errors don't result in crazy changes.
-            setRPSConversionFactor (rpsConversionFactor + Math.signum (desiredRPS) * Range.clip (((expectedTicksSinceUpdate - actualTicksSinceUpdate) * sensitivity), -sensitivityBound, sensitivityBound));
+            rpsConversionFactor += Math.signum (desiredRPS) * Range.clip (((expectedTicksSinceUpdate - actualTicksSinceUpdate) * sensitivity), -sensitivityBound, sensitivityBound);
 
             updateMotorPowers ();
         }
@@ -276,7 +258,7 @@ public class NiFTMotorController
 
     private void recordLastState ()
     {
-        previousMotorPosition = encoderMotor.getCurrentPosition ();
+        previousMotorPosition = ENCODER_MOTOR.getCurrentPosition ();
         lastAdjustTime = System.currentTimeMillis ();
     }
 
@@ -284,17 +266,17 @@ public class NiFTMotorController
     {
         //Set the initial power which the PID will soon modify.
         double desiredPower = Range.clip (desiredRPS * rpsConversionFactor, -1, 1);
-        encoderMotor.setPower (desiredPower);
-        if (linkedMotor != null)
-            linkedMotor.setPower (desiredPower);
+        ENCODER_MOTOR.setPower (desiredPower);
+        if (LINKED_MOTOR != null)
+            LINKED_MOTOR.setPower (desiredPower);
     }
 
     //Used rarely but useful when required.
     public void setDirectMotorPower (double power)
     {
         double actualPower = Range.clip (power, -1, 1);
-        encoderMotor.setPower (actualPower);
-        if (linkedMotor != null)
-            linkedMotor.setPower (actualPower);
+        ENCODER_MOTOR.setPower (actualPower);
+        if (LINKED_MOTOR != null)
+            LINKED_MOTOR.setPower (actualPower);
     }
 }

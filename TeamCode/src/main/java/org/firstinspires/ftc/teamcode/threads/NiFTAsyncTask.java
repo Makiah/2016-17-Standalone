@@ -1,3 +1,7 @@
+/**
+ * This code enables the creation of AsyncTasks easily, which is required for advanced robot functionality.
+ */
+
 package org.firstinspires.ftc.teamcode.threads;
 
 import android.os.AsyncTask;
@@ -6,10 +10,10 @@ import org.firstinspires.ftc.teamcode.console.NiFTConsole;
 
 public abstract class NiFTAsyncTask extends AsyncTask <Void, Void, Void>
 {
-    //Creates a task with the given name, and creates a new process console for the task.
+    //Creates a task with the given NAME, and creates a new process console for the task.
     private final String taskName;
     protected final NiFTConsole.ProcessConsole processConsole;
-    //Default constructor, initializes with default name.
+    //Default constructor, initializes with default NAME.
     public NiFTAsyncTask()
     {
         this("Unnamed NiFT Task");
@@ -62,9 +66,13 @@ public abstract class NiFTAsyncTask extends AsyncTask <Void, Void, Void>
     protected void onQuitTask () {}
 
     /**
-     * run() attempts to run the program in a try-catch block, and in the event of an error, stops the attempt and returns an error to the user.
+     * run() attempts to run the program in a try-catch block, and in the event of an
+     * error, stops the attempt and returns an error to the user.
+     *
      * stop() attempts to stop the program in a similar manner.
-     * Example scenarios of error could be when the user has already run a task instance and has to create a new one, or cancelling a cancelled task.
+     *
+     * Example scenarios of error could be when the user has already run a task instance
+     * and has to create a new one, or cancelling a cancelled task.
      */
     public void run()
     {

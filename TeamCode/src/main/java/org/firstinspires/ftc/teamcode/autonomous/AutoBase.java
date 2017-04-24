@@ -1,320 +1,278 @@
+/**
+ * Initializes autonomous-specific hardware, with just sensors.  Also includes driving methods.
+ */
+
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.MainRobotBase;
 import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.hardware.NiFTColorSensor;
-import org.firstinspires.ftc.teamcode.hardware.NiFTGyroSensor;
-import org.firstinspires.ftc.teamcode.hardware.NiFTRangeSensor;
+import org.firstinspires.ftc.teamcode.threads.NiFTAsyncTask;
+import org.firstinspires.ftc.teamcode.hardware.*;
 import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
-
 
 //For added simplicity while coding autonomous with the new FTC system. Utilizes inheritance and polymorphism.
 public abstract class AutoBase extends MainRobotBase
 {
-    /*------ SENSOR STUFF ------*/
+    /******** SENSOR STUFF ********/
+
+    /**** Range Sensors ****/
+    protected NiFTRangeSensor frontRangeSensor, sideRangeSensor;
 
     /**** Color Sensors (3) ****/
     protected NiFTColorSensor option1ColorSensor, option2ColorSensor, bottomColorSensor, particleColorSensor;
-
     protected boolean option1Red, option2Red, option1Blue, option2Blue;
+
     protected void updateColorSensorStates ()
     {
-        final int redThreshold = 2, blueThreshold = 3;
-        option1Blue = option1ColorSensor.sensor.blue () >= blueThreshold;
-        option1Red = option1ColorSensor.sensor.red () >= redThreshold;
-        option2Blue = option2ColorSensor.sensor.blue () >= blueThreshold;
-        option2Red = option2ColorSensor.sensor.red () >= redThreshold;
+        //Threshold is currently 2, but this could be changed.
+        option1Blue = option1ColorSensor.sensor.blue () >= 3;
+        option1Red = option1ColorSensor.sensor.red () >= 3; //Since blue has an annoying tendency to see red and blue color values.
+        option2Blue = option2ColorSensor.sensor.blue () >= 3;
+        option2Red = option2ColorSensor.sensor.red () >= 3;
     }
 
-    /*--- Gyro ---*/
+    /**** Gyro ****/
     protected NiFTGyroSensor gyroscope;
+
+    /******** Robot Driving ********/
+    private int getRobotEncoderPosition ()
+    {
+        return (int) ((leftDrive.ENCODER_MOTOR.getCurrentPosition () + rightDrive.ENCODER_MOTOR.getCurrentPosition ()) / 2.0);
+    }
+
+    protected enum PowerUnits
+    {
+        RevolutionsPerSecond (1), RevolutionsPerMinute (1.0 / 60);
+
+        public final double conversionFactor;
+
+        PowerUnits (double conversionFactor)
+        {
+            this.conversionFactor = conversionFactor;
+        }
+    }
+
+    protected enum SensorStopType { Distance, Ultrasonic, BottomColorAlpha }
+
+    //A new instance is instantiated upon starting a new drive.
+    protected final class SelfAdjustingDriveTask extends NiFTAsyncTask
+    {
+        private final double RPS;
+        private final boolean useRangeSensor;
+        //Possible constructors.
+        public SelfAdjustingDriveTask (double RPS)
+        {
+            this (RPS, false);
+        }
+        public SelfAdjustingDriveTask (double RPS, boolean useRangeSensor)
+        {
+            super("Self Adjusting Drive");
+
+            this.RPS = RPS;
+            this.useRangeSensor = useRangeSensor;
+        }
+
+        @Override
+        protected void onBeginTask () throws InterruptedException
+        {
+            leftDrive.startPIDTask ();
+            rightDrive.startPIDTask ();
+
+            while (true)
+            {
+                double gyroAdjustment = gyroscope.getOffFromHeading () * 0.15 * Math.signum (RPS);
+                double rangeAdjustment = useRangeSensor ? (15 - sideRangeSensor.validDistCM (15)) * 0.15 : 0;
+
+                double totalAdjustment = gyroAdjustment + rangeAdjustment;
+
+                double leftPower = RPS * (1 + totalAdjustment), rightPower = RPS * (1 - totalAdjustment);
+
+                leftDrive.setRPS (leftPower);
+                rightDrive.setRPS (rightPower);
+
+                processConsole.updateWith (
+                        "Gyro adjustment = " + gyroAdjustment,
+                        "Range adjustment = " + rangeAdjustment,
+                        "Left RPS = " + leftPower,
+                        "Right RPS = " + rightPower
+                );
+
+                NiFTFlow.pauseForMS (50);
+            }
+        }
+
+        @Override
+        protected void onQuitTask()
+        {
+            leftDrive.stopPIDTask ();
+            rightDrive.stopPIDTask ();
+            leftDrive.setRPS(0);
+            rightDrive.setRPS(0);
+        }
+    }
+
+    //This method is the task which looks for the termination and returns to the original task once complete.
+    protected void drive (SensorStopType sensorStopType, double stopValue, PowerUnits powerUnit, double powerMeasure) throws InterruptedException
+    {
+        drive (sensorStopType, stopValue, powerUnit, powerMeasure, false);
+    }
+    protected void drive (SensorStopType sensorStopType, double stopValue, PowerUnits powerUnit, double powerMeasure, boolean useRangeSensorAdjustment) throws InterruptedException
+    {
+        //Create a new output console entirely for this process.
+        NiFTConsole.ProcessConsole driveTerminationConsole = new NiFTConsole.ProcessConsole ("Drive Terminator");
+
+        //Create the drive task.
+        SelfAdjustingDriveTask driveTask = new SelfAdjustingDriveTask (powerMeasure * powerUnit.conversionFactor, useRangeSensorAdjustment);
+        driveTask.run();
+
+        //Calculate values which will be used later but only need one calculation.
+        int powerSign = (int) (Math.signum (powerMeasure));
+        int desiredEncoderStopPosition = sensorStopType == SensorStopType.Distance ? getRobotEncoderPosition () + (int)(stopValue) * powerSign : 0;
+
+        //Allows us to know when we stopEasyTask.
+        boolean reachedFinalDest = false;
+
+        //Actual adjustment aspect of driving.
+        while (!reachedFinalDest)
+        {
+            //Causes program termination.
+            switch (sensorStopType)
+            {
+                case Distance:
+                    //End early if this is pointless.
+                    if (stopValue == 0)
+                        break;
+
+                    int currentDistance = getRobotEncoderPosition ();
+                    reachedFinalDest = desiredEncoderStopPosition * powerSign <= currentDistance * powerSign;
+
+                    driveTerminationConsole.updateWith (
+                            "Current encoder position = " + currentDistance,
+                            "Stopping at position = " + stopValue
+                    );
+
+                    break;
+
+                case Ultrasonic:
+                    double currentRangeVal = frontRangeSensor.validDistCM (255, 300);
+                    reachedFinalDest = currentRangeVal <= stopValue;
+
+                    driveTerminationConsole.updateWith (
+                            "Current range sensor val = " + currentRangeVal,
+                            "Stopping at range = " + stopValue
+                    );
+
+                    break;
+
+                case BottomColorAlpha:
+                    int currentBottomAlpha = bottomColorSensor.sensor.alpha ();
+                    reachedFinalDest = currentBottomAlpha >= stopValue;
+
+                    driveTerminationConsole.updateWith (
+                            "Current bottom alpha = " + currentBottomAlpha,
+                            "Stopping at alpha >= " + stopValue
+                    );
+
+                    break;
+            }
+
+            NiFTFlow.pauseForSingleFrame ();
+        }
+
+        //End the drive task
+        driveTask.stop();
+
+        //Private console no longer required.
+        driveTerminationConsole.destroy ();
+
+        //Brake for 100 ms in order to make sure we have completely stopped.
+        hardBrake (100);
+    }
 
     //Used to turn to a specified heading, and returns the difference between the desired angle and the actual angle achieved.
     protected enum TurnMode { LEFT, RIGHT, BOTH }
+
+    //This battery factor, when updated, remains updated for all future turns so that the robot does not have to start changing it again.
     protected void turnToHeading (int desiredHeading, TurnMode mode, long maxTime) throws InterruptedException
     {
-        //Set gyro desired heading for future calls.
-        gyroscope.setDesiredHeading (desiredHeading);
-
-        //Create a turn process console.
+        //Create a console to which output will be displayed.
         NiFTConsole.ProcessConsole turnConsole = new NiFTConsole.ProcessConsole ("Turning");
 
-        //Required variables.
-        double turnBoost = 0.15;
-        final double turnCoefficient = 0.0035, initialTurnIntercept = turnBoost;
+        //Set gyro desiredHeading.
+        gyroscope.setDesiredHeading (desiredHeading);
 
-        //Get the start time so that we know when to end.
-        long turnStartTime = System.currentTimeMillis ();
+        //Start the PID control for the drive motors.
+        leftDrive.startPIDTask ();
+        rightDrive.startPIDTask ();
 
-        //Get initial values for the automatic boost increase/decrease.
-        int lastOffFromHeading = gyroscope.getOffFromHeading (), currentOffFromHeading = lastOffFromHeading;
-        long lastCheckedTime = turnStartTime;
+        //Get the startTime so that we know when to end.
+        long startTime = System.currentTimeMillis ();
 
-        //While the time limit is not up or the heading is still unacceptably far off.
-        while (System.currentTimeMillis () - turnStartTime < maxTime || currentOffFromHeading >= 10)
+        //Adjust as fully as possible but not beyond the time limit.
+        double offFromHeading;
+        do
         {
-            //Get the current off from heading.
-            currentOffFromHeading = gyroscope.getOffFromHeading ();
+            offFromHeading = gyroscope.getOffFromHeading ();
 
             //Verify that the heading that we thought was perfectly on point actually is on point.
-            if (currentOffFromHeading == 0)
+            if (offFromHeading == 0)
             {
-                hardBrake (100);
+                //Brake for a moment
+                hardBrake (200);
 
-                //Obtain new value and check again.
+                //Verify the heading and break if it has been reached.
                 if (gyroscope.getOffFromHeading () == 0)
                     break;
             }
 
-            //Protection against stalling, increases power if no observed heading change in last fraction of a second.
-            if (System.currentTimeMillis () - lastCheckedTime >= 300 && (System.currentTimeMillis () - turnStartTime) > 1000)
-            {
-                int changeFromLastBoostCheck = Math.abs (lastOffFromHeading - currentOffFromHeading);
-                //Don't start increasing power at the very start of the turn before the robot has had time to accelerate.
-                if (changeFromLastBoostCheck <= 1)
-                    turnBoost += 0.06;
-                else if (changeFromLastBoostCheck >= 7 && turnBoost > initialTurnIntercept)
-                    turnBoost -= 0.03;
-
-                //Update other variables.
-                lastOffFromHeading = currentOffFromHeading;
-                lastCheckedTime = System.currentTimeMillis ();
-            }
-
-            //Turn at a speed proportional to the distance from the ideal heading.
-            double turnPower = Math.signum (currentOffFromHeading) * (Math.abs (currentOffFromHeading) * turnCoefficient + turnBoost);
+            //Calculate turning speed.
+            double turnPower = Math.signum (offFromHeading) * (Math.abs (offFromHeading) * 0.05 + .2);
 
             //Set clipped powers.
             if (mode != TurnMode.RIGHT)
-                leftDrive.setDirectMotorPower (Range.clip (turnPower, -1, 1));
+                leftDrive.setRPS (-1 * Range.clip (turnPower, -1, 1));
             if (mode != TurnMode.LEFT)
-                rightDrive.setDirectMotorPower (-1 * Range.clip (turnPower, -1, 1));
+                rightDrive.setRPS (Range.clip (turnPower, -1, 1));
 
-            //Output required data.
             turnConsole.updateWith (
-                    "Turning to heading " + gyroscope.getDesiredHeading (),
-                    "Off by " + currentOffFromHeading + " degrees",
-                    "Turn Power is " + turnPower,
-                    "Turn boost is " + turnBoost,
-                    "I have " + (maxTime - (System.currentTimeMillis () - turnStartTime)) + "ms left."
+                    "Turning to " + desiredHeading + " degrees",
+                    "Current heading is " + gyroscope.getValidGyroHeading (),
+                    "Turn RPS is " + turnPower,
+                    "Stopping if possible in " + (maxTime - (System.currentTimeMillis () - startTime) + "ms")
             );
 
-            //Pause for a frame so that the program can exit if need be.
             NiFTFlow.pauseForSingleFrame ();
         }
+        while (System.currentTimeMillis () - startTime < maxTime || Math.abs (gyroscope.getOffFromHeading ()) >= 10);
 
-        //Remove the console.
+        //Disable PID on the drive again.
+        leftDrive.stopPIDTask ();
+        rightDrive.stopPIDTask ();
+
+        //Remove the console being used to output to the drivers.
         turnConsole.destroy ();
 
-        //Brake to make sure we are stationary.
+        //Brake to become fully stationary.
         hardBrake (100);
     }
 
-    /*--- Encoders ---*/
-    //Since this method takes a half-second or so to complete, try to run it as little as possible.
-    protected void initializeAndResetEncoders () throws InterruptedException
-    {
-        leftDrive.resetEncoder ();
-        rightDrive.resetEncoder ();
-    }
-
-    private int getEncoderPosition () throws InterruptedException
-    {
-        return (int) ((leftDrive.encoderMotor.getCurrentPosition () + rightDrive.encoderMotor.getCurrentPosition ()) / 2.0);
-    }
-
-    private long lastCheckTime = 0;
-    private double previousPosition = 0;
-
-    private double calculateEncoderAdjustment () throws InterruptedException
-    {
-        int drivenDistance = getEncoderPosition ();
-
-        if ((System.currentTimeMillis () - lastCheckTime) >= 100)
-        {
-            if (Math.abs (drivenDistance - previousPosition) <= 2)
-                return 0.05; //Suggest an increase in movement power if we haven't moved very far.
-
-            previousPosition = drivenDistance;
-            lastCheckTime = System.currentTimeMillis ();
-        }
-
-        return 0; //Don't suggest that we increase movement power.
-    }
-
-    /*--- Range Sensor(s) ---*/
-    protected NiFTRangeSensor frontRangeSensor, sideRangeSensor;
-
-
-    /*------- MOVEMENT POWER CONTROL -------*/
-    //Used to set drive move power initially.
-    private double movementPower = 0;
-    protected void startDrivingAt (double movementPower)
-    {
-        this.movementPower = movementPower;
-
-        leftDrive.setDirectMotorPower (movementPower);
-        rightDrive.setDirectMotorPower (movementPower);
-
-        encoderDriveSpeedBoost = 0;
-    }
-
-    //Stops all drive motors.
-    protected void stopDriving ()
-    {
-        leftDrive.setDirectMotorPower (0);
-        rightDrive.setDirectMotorPower (0);
-    }
-
-    //Stops all drive motors and pauses for a moment
+    //Stops all drive motors and pauses for a moment.
     protected void hardBrake (long msDelay) throws InterruptedException
     {
-        stopDriving ();
+        leftDrive.setRPS (0);
+        rightDrive.setRPS (0);
+
         NiFTFlow.pauseForMS (msDelay);
     }
 
-    private double encoderDriveSpeedBoost = 0;
-    protected void manuallyApplySensorAdjustments (boolean... adjustments) throws InterruptedException
-    {
-        if (adjustments != null)
-        {
-            //Will be used multiple times.
-            int movementPowerSign = (int) (Math.signum (movementPower));
-
-            //Calculate the required sensor adjustments based on the parameters.
-            if (adjustments.length >= 2 && adjustments[1])
-                encoderDriveSpeedBoost += calculateEncoderAdjustment ();
-            else if (encoderDriveSpeedBoost > 0)
-                encoderDriveSpeedBoost = 0;
-
-            double actualMovementPower = movementPower + movementPowerSign * encoderDriveSpeedBoost;
-
-            //For each result, positive favors left side and negative the right side.
-            double gyroAdjustment = 0;
-            if (adjustments.length >= 1 && adjustments[0])
-            {
-                int offFromHeading = gyroscope.getOffFromHeading ();
-                gyroAdjustment = Math.signum (offFromHeading) * (Math.abs (offFromHeading) * .006 + .22);
-            }
-
-            double rangeSensorAdjustment = 0;
-            if (adjustments.length >= 3 && adjustments[2])
-            {
-                double rangeSensorReading = sideRangeSensor.sensor.cmUltrasonic ();
-                if (rangeSensorReading >= 50)
-                    rangeSensorAdjustment = 0;
-                else
-                {
-                    //Desired range sensor values.
-                    double offFromDistance = rangeSensorReading - 15;
-
-                    //Change motor powers based on offFromHeading.
-                    rangeSensorAdjustment = Math.signum (offFromDistance) * (Math.abs (offFromDistance) * 0.03);
-                }
-            }
-
-            double totalAdjustmentFactor = movementPowerSign * gyroAdjustment + rangeSensorAdjustment;
-
-            //Set resulting movement powers based on calculated values.  Can be over one since this is fixed later.
-            rightDrive.setDirectMotorPower (actualMovementPower * (1 - totalAdjustmentFactor));
-            leftDrive.setDirectMotorPower (actualMovementPower * (1 + totalAdjustmentFactor));
-        }
-
-        idle ();
-    }
-
-
-    /*------- DRIVING METHODS -------*/
-    protected enum TerminationType {BOTTOM_ALPHA, RANGE_DIST, ENCODER_DIST}
-    protected void drive (TerminationType terminationType, double stopVal, double movementPower, boolean... adjustments) throws InterruptedException
-    {
-        NiFTConsole.ProcessConsole driveConsole = new NiFTConsole.ProcessConsole ("Driving");
-
-        //Get values required for termination.
-        int movementPowerSign = (int) (Math.signum (movementPower));
-        int desiredEncoderPosition = terminationType == TerminationType.ENCODER_DIST ? (int) (getEncoderPosition () + movementPowerSign * stopVal) : 0;
-
-        //Start moving.
-        startDrivingAt (movementPower);
-
-        //Start adjusting and checking for termination.
-        boolean shouldTerminate = false;
-        while (!shouldTerminate)
-        {
-            //Run adjustment methods.
-            if (adjustments != null)
-                manuallyApplySensorAdjustments (true, adjustments.length >= 1 && adjustments[0], adjustments.length >= 2 && adjustments[1]);
-
-            NiFTFlow.pauseForSingleFrame ();
-
-            //Check if the drive should terminate.
-            switch (terminationType)
-            {
-                case BOTTOM_ALPHA:
-                    shouldTerminate = bottomColorSensor.sensor.alpha () >= stopVal;
-                    break;
-
-                case RANGE_DIST:
-                    double currentRangeVal = frontRangeSensor.validDistCM (255);
-                    shouldTerminate = currentRangeVal < stopVal;
-
-                    driveConsole.updateWith (
-                            "Current dist " + currentRangeVal,
-                            "Stopping at dist " + stopVal
-                    );
-
-                    break;
-
-                case ENCODER_DIST:
-                    /*
-                     * At 1000 trying to go to 300
-                     * power = -0.22 and dist = 700
-                     * initial = 1000
-                     * left = -1 * (1000 + -1 * 700) = -300
-                     * right = -1 * 1000
-                     * so -300 <= -1000 false
-                     *
-                     * At -1000 trying to get to -1300
-                     * power = -0.22 and dist = 300
-                     * initial = -1000
-                     * left = -1 * (-1000 + -1 * 300) = 1300
-                     * right = -1000 * -1
-                     * so 1300 <= 1000 false
-                     *
-                     * At 1000 trying to get to 1300
-                     * power = +1 and dist = 300
-                     * initial = 1000
-                     * left = 1 * (1000 + 1 * 300) = 1300
-                     * right = 1 * 1000 = 1000
-                     * so 1300 <= 1000
-                     */
-
-                    int currentEncoderPosition = getEncoderPosition ();
-                    shouldTerminate = desiredEncoderPosition * movementPowerSign <= currentEncoderPosition * movementPowerSign;
-
-                    driveConsole.updateWith (
-                            "Driving to drive position " + desiredEncoderPosition,
-                            "Current drive position = " + currentEncoderPosition
-                    );
-                    break;
-            }
-        }
-
-        //Become stationary.
-        hardBrake (100);
-
-        driveConsole.destroy ();
-    }
-
-
-    /*------ INITIALIZATION -------*/
-    //Initialize everything required in autonomous that isn't initialized in RobotBase (sensors)
+    /******** INITIALIZATION ********/
+    //Initialize everything required in autonomous that isn't initialized in MainRobotBase (sensors)
     @Override
     protected void initializeOpModeSpecificHardware () throws InterruptedException
     {
-        //The range sensors are especially odd to initialize, and will often require a robot power cycle.
+        //The range sensors are especially odd to initialize, and will often require a robot RPS cycle.
         NiFTConsole.outputNewSequentialLine ("Validating Front Range Sensor...");
         frontRangeSensor = new NiFTRangeSensor ("Front Range Sensor", 0x90);
         NiFTConsole.appendToLastSequentialLine (frontRangeSensor.returningValidOutput () ? "OK!" : "FAILED!");
@@ -332,13 +290,15 @@ public abstract class AutoBase extends MainRobotBase
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
         //Initialize gyroscope.
-        NiFTConsole.outputNewSequentialLine("Calibrating Gyroscope...");
+        NiFTConsole.outputNewSequentialLine ("Calibrating Gyroscope...");
         gyroscope = new NiFTGyroSensor ("Gyroscope"); //Calibrates immediately.
         NiFTConsole.appendToLastSequentialLine ("OK!");
+
+        NiFTConsole.outputNewSequentialLine ("Initialization completed!");
     }
 
 
-    /*------- CHILD CLASS INHERITANCE -----*/
+    /******** CHILD CLASS INHERITANCE ********/
     //All child classes should have special instructions.
     protected abstract void driverStationSaysGO () throws InterruptedException;
 }
