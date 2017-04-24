@@ -1,3 +1,7 @@
+/**
+ * Makes idle() statements easy to access from all code facets.  
+ */
+
 package org.firstinspires.ftc.teamcode.threads;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
