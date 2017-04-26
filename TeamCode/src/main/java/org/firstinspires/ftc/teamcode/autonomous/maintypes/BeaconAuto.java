@@ -101,7 +101,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         //Drive until we are just far enough from the cap ball to score reliably.
         NiFTConsole.outputNewSequentialLine ("Driving forward to the cap ball to score...");
-        drive (TerminationType.RANGE_DIST, 43, BEACON_DP, true);
+        drive (TerminationType.RANGE_DIST, 43, .3, true);
 
         //Shoot the balls into the center vortex.
         NiFTConsole.outputNewSequentialLine ("Shooting balls into center vortex...");
@@ -125,7 +125,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         //Drive to the wall and stop once a little ways away.
         NiFTConsole.outputNewSequentialLine ("Driving to the wall...");
-        drive(TerminationType.RANGE_DIST, (onBlueAlliance ? 33 : 36), BEACON_DP + 0.05, true);
+        drive(TerminationType.RANGE_DIST, (onBlueAlliance ? 33 : 36), .3, true);
 
         //Turn back to become parallel with the wall.
         NiFTConsole.outputNewSequentialLine ("Turning to become parallel to the wall...");
