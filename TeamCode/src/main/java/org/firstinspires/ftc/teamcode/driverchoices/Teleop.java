@@ -97,9 +97,9 @@ public class Teleop extends MainRobotBase
             }
 
             if (gamepad2.right_bumper)
-                lift.setPower (1.0);
-            else if (gamepad2.right_trigger > 0.5)
                 lift.setPower (-0.5);
+            else if (gamepad2.right_trigger > 0.5)
+                lift.setPower (1.0);
             else
                 lift.setPower (0.0);
 
@@ -127,11 +127,11 @@ public class Teleop extends MainRobotBase
 
             //Used to adjust the power of the flywheels.
             if (gamepad2.left_trigger > 0.5 && !pressingFlywheelC && !capBallMode2) {
-                flywheelCoefficient = Range.clip(flywheelCoefficient - 0.04, 0.2, 1.0);
+                flywheelCoefficient = Range.clip(flywheelCoefficient - 0.05, 0.2, 1.0);
                 pressingFlywheelC = true;
             }
             else if (gamepad2.left_bumper && !pressingFlywheelC && !capBallMode2) {
-                flywheelCoefficient = Range.clip(flywheelCoefficient + 0.04, 0.2, 1.0);
+                flywheelCoefficient = Range.clip(flywheelCoefficient + 0.05, 0.2, 1.0);
                 pressingFlywheelC = true;
             }
 

@@ -45,8 +45,7 @@ public abstract class MainRobotBase extends NiFTBase
         /*------------------ OTHER MOTORS AND SERVOS -------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up harvester...");
         harvester = new NiFTMotorController ("Harvester", "harvester").
-                setRPSConversionFactor (0.40).
-                setMotorDirection (DcMotorSimple.Direction.REVERSE);
+                setRPSConversionFactor (0.40);
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
         NiFTConsole.outputNewSequentialLine ("Setting up flywheels...");

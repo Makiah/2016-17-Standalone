@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.autonomous.maintypes.ResetAuto;
 
-@Autonomous(name="Drive Backward", group = "Utility Group")
 
 public class DriveBackward extends ResetAuto
 {
