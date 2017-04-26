@@ -101,7 +101,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         //Drive until we are just far enough from the cap ball to score reliably.
         NiFTConsole.outputNewSequentialLine("Driving forward to the cap ball to score...");
-        drive(SensorStopType.Ultrasonic, 39, PowerUnits.RevolutionsPerSecond, 1);
+        drive(SensorStopType.Ultrasonic, 39, PowerUnits.RevolutionsPerSecond, 3);
 
         //Shoot the balls into the center vortex.
         NiFTConsole.outputNewSequentialLine("Shooting balls into center vortex...");
@@ -122,20 +122,11 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         //Drive to the wall and stopEasyTask once a little ways away.
         NiFTConsole.outputNewSequentialLine ("Driving to the wall...");
-        drive (SensorStopType.Ultrasonic, (onBlueAlliance ? 31 : 36), PowerUnits.RevolutionsPerSecond, 1);
+        drive (SensorStopType.Ultrasonic, (onBlueAlliance ? 35 : 39), PowerUnits.RevolutionsPerSecond, 3);
 
         //Turn back to become parallel with the wall.
         NiFTConsole.outputNewSequentialLine("Turning to become parallel to the wall...");
         turnToHeading(onBlueAlliance ? 0 : -180, TurnMode.BOTH, 3000);
-
-        //Extend pusher so that we are very close to the colors themselves.
-        NiFTConsole.outputNewSequentialLine ("Extending to become parallel to the wall.");
-        double distFromWall = sideRangeSensor.validDistCM (20, 2000); //Make sure valid.
-        int gapBetweenWallAndSensorApparatus = 12;
-        long extensionTime = (long) ((distFromWall - gapBetweenWallAndSensorApparatus) * 67);
-        rightButtonPusher.setToUpperLim ();
-        NiFTFlow.pauseForMS (extensionTime);
-        rightButtonPusher.setServoPosition (0.5); //Stop vex motor.
 
         //For each of the two beacons.
         for (int currentBeacon = 1; currentBeacon <= 2; currentBeacon++)
@@ -144,23 +135,28 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
             //Drive up to the line.
             NiFTConsole.outputNewSequentialLine ("Looking for beacon " + currentBeacon);
-            SelfAdjustingDriveTask drivingTask = new SelfAdjustingDriveTask (BEACON_RPS, true);
-            drivingTask.run();
-            while (bottomColorSensor.sensor.alpha () <= 4)
-            {
-                NiFTFlow.pauseForSingleFrame ();
-            }
-            drivingTask.stop();
+            drive(SensorStopType.BottomColorAlpha, 4, PowerUnits.RevolutionsPerSecond, BEACON_RPS);
+
 
             /******** STEP 3: PRESS AND VERIFY THE BEACON!!!!! ********/
 
-            NiFTConsole.outputNewSequentialLine ("Beacon spotted!  Initiating pressing steps...");
+            NiFTConsole.outputNewSequentialLine ("Line spotted!");
 
             //While the beacon is not completely blue (this is the verification step).
             int failedAttempts = 0; //The robot tries different drive lengths for each trial.
-            updateColorSensorStates (); //Has to know the initial colors.
 
-            while (onBlueAlliance ? (!(option1Blue && option2Blue)) : (!(option1Red && option2Red)))
+            //Extend pusher so that we are very close to the colors themselves.
+            NiFTConsole.outputNewSequentialLine ("Extending to see the beacon...");
+            double distFromWall = sideRangeSensor.validDistCM (20, 2000); //Make sure valid.
+            rightButtonPusher.setToUpperLim ();
+            long timeToSeeDistinctColors = System.currentTimeMillis ();
+            while (!((option1Red && option2Blue || option2Red && option1Blue)))
+                NiFTFlow.pauseForSingleFrame ();
+            timeToSeeDistinctColors = System.currentTimeMillis () - timeToSeeDistinctColors;
+            long idealButtonPressTime = (long) (distFromWall * 67) - timeToSeeDistinctColors;
+            rightButtonPusher.setServoPosition (0.5); //Stop vex motor
+
+            do
             {
                 NiFTConsole.outputNewSequentialLine ("Beacon is not colored correctly, attempting to press the correct color!");
 
@@ -200,13 +196,13 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 {
                     //Press the button.
                     rightButtonPusher.setToUpperLim ();
-                    NiFTFlow.pauseForMS (gapBetweenWallAndSensorApparatus * 67);
+                    NiFTFlow.pauseForMS (idealButtonPressTime);
                     rightButtonPusher.setServoPosition (1);
-                    NiFTFlow.pauseForMS (gapBetweenWallAndSensorApparatus * 67 - 300);
+                    NiFTFlow.pauseForMS (idealButtonPressTime - 300);
                 }
 
                 //Drive back to the original position.
-                drivingTask = new SelfAdjustingDriveTask (BEACON_RPS, true);
+                SelfAdjustingDriveTask drivingTask = new SelfAdjustingDriveTask (BEACON_RPS, true);
                 drivingTask.run();
                 while (bottomColorSensor.sensor.alpha () <= 4 || !((option1Red || option1Blue) && (option2Red || option2Blue)))
                 {
@@ -221,11 +217,17 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 //Update beacon states to check loop condition.
                 updateColorSensorStates ();
             }
+            while (onBlueAlliance ? (!(option1Blue && option2Blue)) : (!(option1Red && option2Red)));
 
             NiFTConsole.outputNewSequentialLine ("Success!  The beacon is completely blue.");
 
+            rightButtonPusher.setToLowerLim ();
+            long timeToPressWall = System.currentTimeMillis ();
+            NiFTFlow.pauseForMS (timeToPressWall);
+            rightButtonPusher.setServoPosition (0.5); //Stop vex motor
+
             //Drive a little ways beyond the white line.
-            drive (SensorStopType.Distance, 500, PowerUnits.RevolutionsPerSecond, autonomousSign * (BEACON_RPS + 1));
+            drive (SensorStopType.Distance, 200, PowerUnits.RevolutionsPerSecond, autonomousSign * (BEACON_RPS + 1));
         }
 
 

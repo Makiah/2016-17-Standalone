@@ -1,6 +1,7 @@
 package org.makiah.niftc.hardware;
 
 import com.qualcomm.robotcore.hardware.HardwareDevice;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.makiah.niftc.NiFTBase;
 
@@ -9,12 +10,18 @@ import org.makiah.niftc.NiFTBase;
  */
 public class NiFTInitializer
 {
+    private static HardwareMap newHardwareMap;
+    public static void initializeWith(HardwareMap hardwareMap)
+    {
+        newHardwareMap = hardwareMap;
+    }
+
     public static <T extends HardwareDevice> T initialize (Class<T> hardwareDevice, String name)
     {
         try
         {
             //Returns the last subclass (if this were a DcMotor it would pass back a Dc Motor.
-            return hardwareDevice.cast (NiFTBase.opModeInstance.hardwareMap.get (name));
+            return hardwareDevice.cast (newHardwareMap.get (name));
         }
         catch (Exception e) //There might be other exceptions that this throws, not entirely sure about which so I am general here.
         {
