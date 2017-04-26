@@ -18,16 +18,6 @@ public abstract class AutoBase extends MainRobotBase
     /**** Color Sensors (3) ****/
     protected NiFTColorSensor option1ColorSensor, option2ColorSensor, bottomColorSensor, particleColorSensor;
 
-    protected boolean option1Red, option2Red, option1Blue, option2Blue;
-    protected void updateColorSensorStates ()
-    {
-        final int redThreshold = 2, blueThreshold = 3;
-        option1Blue = option1ColorSensor.sensor.blue () >= blueThreshold;
-        option1Red = option1ColorSensor.sensor.red () >= redThreshold;
-        option2Blue = option2ColorSensor.sensor.blue () >= blueThreshold;
-        option2Red = option2ColorSensor.sensor.red () >= redThreshold;
-    }
-
     /*--- Gyro ---*/
     protected NiFTGyroSensor gyroscope;
 
@@ -105,11 +95,11 @@ public abstract class AutoBase extends MainRobotBase
             NiFTFlow.pauseForSingleFrame ();
         }
 
-        //Remove the console.
-        turnConsole.destroy ();
-
         //Brake to make sure we are stationary.
         hardBrake (100);
+
+        //Remove the console.
+        turnConsole.destroy ();
     }
 
     /*--- Encoders ---*/

@@ -57,8 +57,8 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
     @Override
     protected void driverStationSaysGO () throws InterruptedException
     {
-        boolean onBlueAlliance = (getAlliance() == Alliance.BLUE);
-        int autonomousSign = (onBlueAlliance ? 1 : -1);
+        final boolean onBlueAlliance = (getAlliance() == Alliance.BLUE);
+        final int autonomousSign = (onBlueAlliance ? 1 : -1);
 
         flywheels.startPIDTask ();
         flywheels.setRPS (18.2);

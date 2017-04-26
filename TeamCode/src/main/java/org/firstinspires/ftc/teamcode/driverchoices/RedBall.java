@@ -10,6 +10,6 @@ public class RedBall extends BallAuto
 {
     public Alliance getAlliance ()
     {
-        return Alliance.BLUE;
+        return Alliance.RED;
     }
 }

@@ -69,15 +69,28 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         }
     }
 
+    //Color sensor updates.
+    private boolean option1Red, option2Red, option1Blue, option2Blue, lineDetectedBelowBot;
+    private void updateColorSensorStates ()
+    {
+        final int redThreshold = 2, blueThreshold = 3;
+        option1Blue = option1ColorSensor.sensor.blue () >= blueThreshold;
+        option1Red = option1ColorSensor.sensor.red () >= redThreshold;
+        option2Blue = option2ColorSensor.sensor.blue () >= blueThreshold;
+        option2Red = option2ColorSensor.sensor.red () >= redThreshold;
+        lineDetectedBelowBot = bottomColorSensor.sensor.alpha() >= 4;
+    }
+
     //Called after runOpMode() has finished initializing by BaseFunctions.
     @Override
     protected void driverStationSaysGO () throws InterruptedException
     {
-        final double BEACON_DP = 0.2;
+        //The power at which the robot will attempt to drive to ensure accuracy.
+        final double BEACON_DP = 0.25;
 
         //Results in a coefficient of 1 if doing blue, and -1 for red.
-        boolean onBlueAlliance = (getAlliance () == Alliance.BLUE);
-        int autonomousSign = (onBlueAlliance ? 1 : -1);
+        final boolean onBlueAlliance = (getAlliance () == Alliance.BLUE);
+        final int autonomousSign = (onBlueAlliance ? 1 : -1);
 
         /*------- STEP 1: SHOOT, DRIVE, TURN TO BE PARALLEL WITH WALL --------*/
 
@@ -119,9 +132,9 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         turnToHeading (onBlueAlliance ? 0 : -180, TurnMode.BOTH, 3000);
 
         //Extend pusher so that we are right up next to the wall.
-        NiFTConsole.outputNewSequentialLine ("Extending to become close to the wall.");
+        NiFTConsole.outputNewSequentialLine ("Extending to become close to the wall...");
         double distFromWall = sideRangeSensor.validDistCM (20, 2000); //Make sure valid.
-        int gapBetweenWallAndSensorApparatus = 12;
+        int gapBetweenWallAndSensorApparatus = 10;
         long extensionTime = (long) ((distFromWall - gapBetweenWallAndSensorApparatus) * 67);
         rightButtonPusher.setToUpperLim ();
         NiFTFlow.pauseForMS (extensionTime);
@@ -135,8 +148,16 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
             startDrivingAt (BEACON_DP * autonomousSign);
 
             //While we haven't gotten on the line and seen distinct colors (can't vary).
-            while (!(bottomColorSensor.sensor.alpha () >= 4 && ((option1Blue && option2Red) || (option1Red && option2Blue))))
+            long startTime = System.currentTimeMillis ();
+            boolean tookTooLong = false;
+            while (!(lineDetectedBelowBot && ((option1Blue && option2Red) || (option1Red && option2Blue))))
             {
+                //it might miss the line.
+                if ((System.currentTimeMillis () - startTime) > 2000)
+                {
+                    tookTooLong = true;
+                    break;
+                }
                 updateColorSensorStates ();
                 manuallyApplySensorAdjustments (true, true, true);
             }
@@ -144,11 +165,11 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
             //Stop once centered on the beacon.
             hardBrake (100);
 
-            if (!(bottomColorSensor.sensor.alpha () >= 4 && ((option1Blue && option2Red) || (option1Red && option2Blue))))
+            if (tookTooLong || !(lineDetectedBelowBot && ((option1Blue && option2Red) || (option1Red && option2Blue))))
             {
                 startDrivingAt (-1 * (BEACON_DP - 0.05) * autonomousSign);
 
-                while (!(bottomColorSensor.sensor.alpha () >= 4 && ((option1Blue && option2Red) || (option1Red && option2Blue))))
+                while (!(lineDetectedBelowBot && ((option1Blue && option2Red) || (option1Red && option2Blue))))
                 {
                     updateColorSensorStates ();
                     manuallyApplySensorAdjustments (true, true, true);
@@ -228,8 +249,16 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                     //Start driving.
                     startDrivingAt (-1 * Math.signum (drivePower) * BEACON_DP);
                     //While we haven't gotten on the line and seen distinct colors (can't vary).
-                    while (!(bottomColorSensor.sensor.alpha () >= 4 && ((option1Red || option1Blue) && (option2Red || option2Blue))))
+                    startTime = System.currentTimeMillis ();
+                    tookTooLong = false;
+                    while (!(lineDetectedBelowBot && ((option1Red || option1Blue) && (option2Red || option2Blue))))
                     {
+                        //it might miss the beacon.
+                        if ((System.currentTimeMillis () - startTime) > 1600)
+                        {
+                            tookTooLong = true;
+                            break;
+                        }
                         updateColorSensorStates ();
                         manuallyApplySensorAdjustments (true, true);
                     }
@@ -237,11 +266,11 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                     //Stop once centered on the beacon.
                     hardBrake (100);
 
-                    if (!(bottomColorSensor.sensor.alpha () >= 4 && ((option1Red || option1Blue) && (option2Red || option2Blue))))
+                    if (tookTooLong || !(lineDetectedBelowBot && ((option1Red || option1Blue) && (option2Red || option2Blue))))
                     {
                         startDrivingAt ((BEACON_DP - 0.05) * autonomousSign);
 
-                        while (!(bottomColorSensor.sensor.alpha () >= 4 && ((option1Red || option1Blue) && (option2Red || option2Blue))))
+                        while (!(lineDetectedBelowBot && ((option1Red || option1Blue) && (option2Red || option2Blue))))
                         {
                             updateColorSensorStates ();
                             manuallyApplySensorAdjustments (true, true, true);
@@ -268,6 +297,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
             else
                 distToDrive = 200;
 
+            //Drive to the next line/a little ways away from the beacon for the turn.
             drive(TerminationType.ENCODER_DIST, distToDrive, 0.42 * autonomousSign, true);
         }
 
@@ -283,7 +313,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         /*------- STEP 4: PARK AND KNOCK OFF THE CAP BALL -------*/
 
         NiFTConsole.outputNewSequentialLine ("Knocking the cap ball off of the pedestal...");
-        turnToHeading (36 * autonomousSign - (onBlueAlliance ? 0 : 180), TurnMode.BOTH, 2000);
-        drive(TerminationType.ENCODER_DIST, 3000, -1.0 * autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
+        turnToHeading (onBlueAlliance ? 36 : -216, TurnMode.BOTH, 2000);
+        drive(TerminationType.ENCODER_DIST, 3000, -autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
     }
 }

@@ -23,6 +23,8 @@ public class NiFTConsole
         sequentialConsoleData = new ArrayList<> ();
         privateProcessConsoles = new ArrayList<> ();
 
+        consoleUpdaterInstance = null;
+
         //Will stop when stop requested.
         startConsoleUpdater ();
     }
@@ -87,6 +89,11 @@ public class NiFTConsole
      */
     private static class ConsoleUpdater extends NiFTTask
     {
+        public ConsoleUpdater()
+        {
+            super("Console Task");
+        }
+
         @Override
         protected void onDoTask () throws InterruptedException
         {

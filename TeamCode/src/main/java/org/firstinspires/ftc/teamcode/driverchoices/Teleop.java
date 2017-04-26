@@ -100,10 +100,10 @@ public class Teleop extends MainRobotBase
                 lift.setPower (0.0);
 
             /*------------ Harvester ------------*/
-            if (gamepad2.b) {
+            if (gamepad2.a) {
                 harvester.setRPS (harvesterMaxRPS); // Collect
             }
-            else if (gamepad2.a) {
+            else if (gamepad2.b) {
                 harvester.setRPS (-harvesterMaxRPS); // Reverse harvester
             }
             else {
