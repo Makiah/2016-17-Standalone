@@ -1,8 +1,8 @@
-package org.makiah.niftc.examples;
+package org.firstinspires.ftc.teamcode.examples;
 
-import org.makiah.niftc.NiFTBase;
-import org.makiah.niftc.threads.NiFTFlow;
-import org.makiah.niftc.threads.NiFTTask;
+import org.firstinspires.ftc.teamcode.NiFTBase;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.threads.NiFTTask;
 
 public class MultipleTasks extends NiFTBase
 {

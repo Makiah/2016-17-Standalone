@@ -1,10 +1,10 @@
-package org.makiah.niftc.console;
+package org.firstinspires.ftc.teamcode.console;
 
 import android.os.AsyncTask;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.makiah.niftc.NiFTBase;
-import org.makiah.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.NiFTBase;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 import java.util.ArrayList;
 

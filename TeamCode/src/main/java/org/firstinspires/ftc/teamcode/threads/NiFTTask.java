@@ -1,8 +1,8 @@
-package org.makiah.niftc.threads;
+package org.firstinspires.ftc.teamcode.threads;
 
 import android.os.AsyncTask;
 
-import org.makiah.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
 
 /**
  * NiFTTask is an easier method of working with AsyncTasks, which provides a convenient process console and a bunch of other functionality to the table for an opmode which requires a bunch of advanced tooling.

@@ -1,21 +1,14 @@
-package org.makiah.niftc.threads;
+package org.firstinspires.ftc.teamcode.threads;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.NiFTBase;
 
 /**
  * This class is super important to running the program while making sure to check the user requested state of the program.  While running any wait method, the program will run essentially an idle() statement to check to see whether a stop was requested, and throw an InterruptedException in that event.
  */
 public class NiFTFlow
 {
-    /**
-     * NiFTBase calls this method at the start of the program's execution to allow it to check isStopRequested().
-     */
-    private static LinearOpMode mainLinOpMode;
-    public static void initializeWith (LinearOpMode opMode)
-    {
-        mainLinOpMode = opMode;
-    }
-
     /**
      * This method "waits" for a given number of seconds by running pauseForSingleFrame() as long as necessary.
      *
@@ -36,7 +29,7 @@ public class NiFTFlow
      */
     public static void pauseForSingleFrame() throws InterruptedException
     {
-        if (mainLinOpMode.isStopRequested())
+        if (NiFTBase.opModeInstance.isStopRequested())
             throw new InterruptedException();
 
         Thread.yield();

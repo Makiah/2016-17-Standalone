@@ -1,4 +1,4 @@
-package org.makiah.niftc.hardware;
+package org.firstinspires.ftc.teamcode.hardware;
 
 import android.os.AsyncTask;
 
@@ -6,9 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
-import org.makiah.niftc.console.NiFTConsole;
-import org.makiah.niftc.threads.NiFTFlow;
-import org.makiah.niftc.threads.NiFTTask;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.threads.NiFTTask;
 
 /**
  * Accurate and helpful PID is a difficult feat to accomplish, this a simplistic approach which works fairly well and is highly customizable.
@@ -232,7 +232,7 @@ public class NiFTMotorController
                     );
                 }
 
-                NiFTFlow.pauseForMS (30);
+                NiFTFlow.pauseForMS (60);
             }
         }
 

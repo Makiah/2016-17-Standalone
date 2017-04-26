@@ -1,8 +1,8 @@
-package org.makiah.niftc.examples;
+package org.firstinspires.ftc.teamcode.examples;
 
-import org.makiah.niftc.NiFTBase;
-import org.makiah.niftc.music.NiFTMusic;
-import org.makiah.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.NiFTBase;
+import org.firstinspires.ftc.teamcode.music.NiFTMusic;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 public class StarWars extends NiFTBase
 {

@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
-import org.makiah.niftc.console.NiFTConsole;
-import org.makiah.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 public abstract class BallAuto extends AutoBase implements OnAlliance
 {
@@ -70,7 +70,7 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
 
         //Drive to the cap ball.
         NiFTConsole.outputNewSequentialLine ("Driving to shooting position...");
-        drive (SensorStopType.Ultrasonic, 40, PowerUnits.RevolutionsPerMinute, 1);
+        drive (SensorStopType.Ultrasonic, 40, PowerUnits.RevolutionsPerMinute, 3);
 
         //Shoot the balls into the center vortex.
         NiFTConsole.outputNewSequentialLine("Shooting balls into center vortex...");
@@ -83,7 +83,7 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
         if (parkOnCenterVortex)
         {
             NiFTConsole.outputNewSequentialLine ("Parking on center vortex...");
-            drive(SensorStopType.Distance, 1400, PowerUnits.RevolutionsPerMinute, 2);
+            drive(SensorStopType.Distance, 1400, PowerUnits.RevolutionsPerMinute, 3);
             return; //End prematurely
         }
 
@@ -106,6 +106,6 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
 
         //Drive until we reach the appropriate position.
         NiFTConsole.outputNewSequentialLine ("Driving to the ramp...");
-        drive(SensorStopType.Distance, 1000, PowerUnits.RevolutionsPerMinute, 1);
+        drive(SensorStopType.Distance, 1000, PowerUnits.RevolutionsPerMinute, 3);
     }
 }

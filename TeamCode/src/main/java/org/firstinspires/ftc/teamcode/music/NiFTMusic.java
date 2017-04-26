@@ -1,10 +1,10 @@
-package org.makiah.niftc.music;
+package org.firstinspires.ftc.teamcode.music;
 
 import android.media.MediaPlayer;
 
-import org.makiah.niftc.NiFTBase;
-import org.makiah.niftc.console.NiFTConsole;
-import org.makiah.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.NiFTBase;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 /**
  * NiFTMusic enables the easy playing of audio files which are placed in the FtcRobotController/res/raw folder.  This functionality is helpful for both debugging and showing the other teams that you've got swag.

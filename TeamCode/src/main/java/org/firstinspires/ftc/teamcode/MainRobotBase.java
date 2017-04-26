@@ -3,11 +3,10 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.makiah.niftc.NiFTBase;
-import org.makiah.niftc.console.NiFTConsole;
-import org.makiah.niftc.hardware.NiFTInitializer;
-import org.makiah.niftc.hardware.NiFTMotorController;
-import org.makiah.niftc.hardware.NiFTServo;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.hardware.NiFTInitializer;
+import org.firstinspires.ftc.teamcode.hardware.NiFTMotorController;
+import org.firstinspires.ftc.teamcode.hardware.NiFTServo;
 
 /**
  * This base class contains the robot initialization steps for hardware used in both autonomous and teleop.
@@ -45,7 +44,8 @@ public abstract class MainRobotBase extends NiFTBase
         /*------------------ OTHER MOTORS AND SERVOS -------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up harvester...");
         harvester = new NiFTMotorController ("Harvester", "harvester").
-                setRPSConversionFactor (0.40);
+                setRPSConversionFactor (0.40).
+                setMotorDirection (DcMotorSimple.Direction.REVERSE);
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
         NiFTConsole.outputNewSequentialLine ("Setting up flywheels...");

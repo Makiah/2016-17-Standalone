@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.debugging;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
-import org.makiah.niftc.console.NiFTConsole;
-import org.makiah.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 @Autonomous(name = "Shooting - PID Debug", group = "Utility Group")
 

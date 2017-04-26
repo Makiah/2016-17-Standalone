@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.autonomous.maintypes;
 
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
-import org.makiah.niftc.console.NiFTConsole;
-import org.makiah.niftc.threads.NiFTFlow;
-import org.makiah.niftc.threads.NiFTTask;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.threads.NiFTTask;
 
 /**
  * This class is the base class for red and blue beacon autonomouses.

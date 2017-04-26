@@ -3,12 +3,12 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.MainRobotBase;
-import org.makiah.niftc.console.NiFTConsole;
-import org.makiah.niftc.hardware.NiFTColorSensor;
-import org.makiah.niftc.hardware.NiFTGyroSensor;
-import org.makiah.niftc.hardware.NiFTRangeSensor;
-import org.makiah.niftc.threads.NiFTFlow;
-import org.makiah.niftc.threads.NiFTTask;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.hardware.NiFTColorSensor;
+import org.firstinspires.ftc.teamcode.hardware.NiFTGyroSensor;
+import org.firstinspires.ftc.teamcode.hardware.NiFTRangeSensor;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.threads.NiFTTask;
 
 /**
  * Initializes autonomous-specific hardware, with just sensors.  Also includes driving methods.

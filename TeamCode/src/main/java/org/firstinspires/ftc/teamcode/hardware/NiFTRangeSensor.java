@@ -1,4 +1,4 @@
-package org.makiah.niftc.hardware;
+package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.I2cAddr;

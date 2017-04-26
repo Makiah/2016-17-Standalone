@@ -1,10 +1,10 @@
-package org.makiah.niftc;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.makiah.niftc.console.NiFTConsole;
-import org.makiah.niftc.music.NiFTMusic;
-import org.makiah.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.music.NiFTMusic;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 /**
  * NiFTBase is the class from which all user OpModes should inherit.  With advanced error handling, it takes care of the scenarios in which the user requests an early stop, fails to take an error into account, etc.

@@ -1,9 +1,9 @@
-package org.makiah.niftc.hardware;
+package org.firstinspires.ftc.teamcode.hardware;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 
-import org.makiah.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 /**
  * This class currently only encapsulates the color sensor, and enables immediate I2C address setting and LED enabling.

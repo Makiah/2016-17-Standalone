@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.MainRobotBase;
-import org.makiah.niftc.console.NiFTConsole;
-import org.makiah.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 //Add the teleop to the op mode register.
 @TeleOp(name="Teleop", group="Teleop Group")
@@ -104,15 +104,12 @@ public class Teleop extends MainRobotBase
                 lift.setPower (0.0);
 
             /*------------ Harvester ------------*/
-            if (gamepad2.b) {
-                harvester.setRPS (harvesterMaxRPS); // Collect
-            }
-            else if (gamepad2.a) {
-                harvester.setRPS (-harvesterMaxRPS); // Reverse harvester
-            }
-            else {
+            if (gamepad2.b)
+                harvester.setRPS (-harvesterMaxRPS); // Collect
+            else if (gamepad2.a)
+                harvester.setRPS (harvesterMaxRPS); // Reverse harvester
+            else
                 harvester.setRPS (0);
-            }
 
             /*------------- Flywheels -----------*/
             if (gamepad2.dpad_up) {

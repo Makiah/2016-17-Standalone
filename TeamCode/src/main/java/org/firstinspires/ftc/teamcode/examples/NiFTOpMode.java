@@ -1,10 +1,10 @@
-package org.makiah.niftc.examples;
+package org.firstinspires.ftc.teamcode.examples;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.makiah.niftc.NiFTBase;
-import org.makiah.niftc.hardware.NiFTMotorController;
-import org.makiah.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.NiFTBase;
+import org.firstinspires.ftc.teamcode.hardware.NiFTMotorController;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 public class NiFTOpMode extends NiFTBase
 {

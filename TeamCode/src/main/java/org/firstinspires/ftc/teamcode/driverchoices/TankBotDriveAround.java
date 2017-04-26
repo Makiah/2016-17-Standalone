@@ -6,9 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-import org.makiah.niftc.NiFTBase;
-import org.makiah.niftc.hardware.NiFTInitializer;
-import org.makiah.niftc.music.NiFTMusic;
+import org.firstinspires.ftc.teamcode.NiFTBase;
+import org.firstinspires.ftc.teamcode.hardware.NiFTInitializer;
+import org.firstinspires.ftc.teamcode.music.NiFTMusic;
 
 //Add the teleop to the op mode register.
 @TeleOp(name="TankBot Drive", group="TankBot Group")
