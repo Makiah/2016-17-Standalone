@@ -4,8 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.MainRobotBase;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 
 //Add the teleop to the op mode register.
 @TeleOp(name="Teleop", group="Teleop Group")

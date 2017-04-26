@@ -3,11 +3,11 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.MainRobotBase;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.hardware.NiFTColorSensor;
-import org.firstinspires.ftc.teamcode.hardware.NiFTGyroSensor;
-import org.firstinspires.ftc.teamcode.hardware.NiFTRangeSensor;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTColorSensor;
+import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTGyroSensor;
+import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTRangeSensor;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 
 
 //For added simplicity while coding autonomous with the new FTC system. Utilizes inheritance and polymorphism.

@@ -1,9 +1,12 @@
-package org.firstinspires.ftc.teamcode.hardware;
+package org.firstinspires.ftc.teamcode.niftc.hardware;
 
 import com.qualcomm.robotcore.hardware.GyroSensor;
 
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 
+/**
+ * Encapsulates the gyro sensor in an easy to access set of methods.
+ */
 public class NiFTGyroSensor
 {
     public final GyroSensor sensor;
@@ -15,6 +18,12 @@ public class NiFTGyroSensor
         calibrate (true);
     }
 
+    /**
+     * Calibrates the gyro and optionally zeroes the heading.
+     *
+     * @param zeroHeading if true, it zeroes the heading as well.
+     * @throws InterruptedException
+     */
     public void calibrate(boolean zeroHeading) throws InterruptedException
     {
         //Pause to prevent odd errors in which it says it's configured but is actually LYING.
@@ -37,14 +46,19 @@ public class NiFTGyroSensor
         NiFTFlow.pauseForMS (400);
     }
 
-    //The gyroscope value goes from 0 to 360: when the bot turns left, it immediately goes to 360.
+    /**
+     * OK SO
+     * The gyro output is weird.  This makes it easier to access these values, by providing positive values if turning left and negative values if turning right.
+     * However, if we turn to heading 190, then we will have an error as it tries to calculate getting to this position and can't get a value greater than 180 (190 is -170 with this method)
+     * So this method incorporates the desired heading and the current heading and the inability of the robot to turn super fast to return calculation-valid values.
+     */
     public int getValidGyroHeading()
     {
         //Get the heading.
         int heading = sensor.getHeading ();
 
         //Determine the actual heading on a logical basis (which makes sense with the calculations).
-        if (heading > 180 && heading < 360)
+        if (heading > 180 && heading <= 360)
             heading -= 360;
 
         //What this does is enable the 180 degree turn to be effectively made without resulting in erratic movement.
@@ -56,7 +70,7 @@ public class NiFTGyroSensor
         return heading;
     }
 
-    //The desired heading of the gyro.
+    //Set this value before attempting a turn with the method below.
     private int desiredHeading = 0;
     public void setDesiredHeading(int desiredHeading)
     {

@@ -2,14 +2,14 @@ package org.firstinspires.ftc.teamcode.autonomous.maintypes;
 
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.threads.NiFTAsyncTask;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTTask;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 
 public abstract class BeaconAuto extends AutoBase implements OnAlliance
 {
     //The task which will be used to control harvesting particles while we drive.
-    private final class PickUpAndAutoRejectParticles extends NiFTAsyncTask
+    private class PickUpAndAutoRejectParticles extends NiFTTask
     {
         public PickUpAndAutoRejectParticles()
         {
@@ -19,7 +19,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         private int pickedUpParticles = 0;
 
         @Override
-        protected void onBeginTask () throws InterruptedException
+        protected void onDoTask () throws InterruptedException
         {
             //Set initial harvester power.
             harvester.setDirectMotorPower (.8);
@@ -82,6 +82,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         /*------- STEP 1: SHOOT, DRIVE, TURN TO BE PARALLEL WITH WALL --------*/
 
         //Start the flywheels so that PID has time to adjust them.
+        NiFTConsole.outputNewSequentialLine ("Starting flywheels...");
         flywheels.setRPS (18.2);
         flywheels.startPIDTask ();
 
