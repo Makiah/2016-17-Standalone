@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
 import org.firstinspires.ftc.teamcode.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
 
 public abstract class BallAuto extends AutoBase implements OnAlliance
 {
@@ -58,13 +59,20 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
         boolean onBlueAlliance = (getAlliance() == Alliance.BLUE);
         int autonomousSign = (onBlueAlliance ? 1 : -1);
 
+        flywheels.startPIDTask ();
+        flywheels.setRPS (18.2);
+
         //Drive to the cap ball.
         NiFTConsole.outputNewSequentialLine ("Driving to shooting position.");
         drive (TerminationType.RANGE_DIST, 40, .27);
 
         //Shoot the balls into the center vortex.
         NiFTConsole.outputNewSequentialLine ("Shooting balls into center vortex...");
-        //shootBallsIntoCenterVortex ();
+        harvester.setDirectMotorPower (1);
+        NiFTFlow.pauseForMS (2200);
+        harvester.setDirectMotorPower (0);
+        flywheels.stopPIDTask ();
+        flywheels.setRPS (0);
 
         if (parkOnCenterVortex)
         {
