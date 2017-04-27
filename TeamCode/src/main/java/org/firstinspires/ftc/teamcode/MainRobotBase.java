@@ -19,7 +19,7 @@ public abstract class MainRobotBase extends NiFTBase
     protected DcMotor lift;
     protected NiFTServo rightButtonPusher, frontButtonPusher, capBallHolder;
 
-    protected void initializeHardware () throws InterruptedException
+    protected final void initializeHardware () throws InterruptedException
     {
         /*----------------- SERVOS -------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up servos...");

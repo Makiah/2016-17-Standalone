@@ -70,15 +70,14 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
     }
 
     //Color sensor updates.
-    private boolean option1Red, option2Red, option1Blue, option2Blue, lineDetectedBelowBot;
+    private boolean option1Red, option2Red, option1Blue, option2Blue;
     private void updateColorSensorStates ()
     {
-        final int redThreshold = 2, blueThreshold = 3;
+        final int redThreshold = 1, blueThreshold = 3;
         option1Blue = option1ColorSensor.sensor.blue () >= blueThreshold;
-        option1Red = option1ColorSensor.sensor.red () >= redThreshold;
+        option1Red = option1ColorSensor.sensor.red () >= redThreshold && !option1Blue;
         option2Blue = option2ColorSensor.sensor.blue () >= blueThreshold;
-        option2Red = option2ColorSensor.sensor.red () >= redThreshold;
-        lineDetectedBelowBot = bottomColorSensor.sensor.alpha() >= 4;
+        option2Red = option2ColorSensor.sensor.red () >= redThreshold && !option2Blue;
     }
 
     //Called after runOpMode() has finished initializing by BaseFunctions.
@@ -144,40 +143,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         for (int currentBeacon = 1; currentBeacon <= 2; currentBeacon++)
         {
             /*------- STEP 2: FIND AND CENTER SELF ON BEACON --------*/
-            //Set movement speed.
-            startDrivingAt (BEACON_DP * autonomousSign);
-
-            //While we haven't gotten on the line and seen distinct colors (can't vary).
-            long startTime = System.currentTimeMillis ();
-            boolean tookTooLong = false;
-            while (!(lineDetectedBelowBot && ((option1Blue && option2Red) || (option1Red && option2Blue))))
-            {
-                //it might miss the line.
-                if ((System.currentTimeMillis () - startTime) > 2000)
-                {
-                    tookTooLong = true;
-                    break;
-                }
-                updateColorSensorStates ();
-                manuallyApplySensorAdjustments (true, true, true);
-            }
-
-            //Stop once centered on the beacon.
-            hardBrake (100);
-
-            if (tookTooLong || !(lineDetectedBelowBot && ((option1Blue && option2Red) || (option1Red && option2Blue))))
-            {
-                startDrivingAt (-1 * (BEACON_DP - 0.05) * autonomousSign);
-
-                while (!(lineDetectedBelowBot && ((option1Blue && option2Red) || (option1Red && option2Blue))))
-                {
-                    updateColorSensorStates ();
-                    manuallyApplySensorAdjustments (true, true, true);
-                }
-
-                hardBrake(100);
-            }
-
+            centerSelfOnWhiteLine (BEACON_DP * autonomousSign, 3000);
 
             /*------- STEP 3: PRESS AND VERIFY THE BEACON!!!!! -------*/
 
@@ -220,66 +186,27 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 {
                     failedAttempts = -1; //This will be incremented and returned to 0, fear not.
                     NiFTConsole.outputNewSequentialLine ("Can't see the beacon clearly, so extending!");
-                    driveDistance = 0;
-                    drivePower = 0;
-
-                    //Run out button pusher.
-                    long additionalExtensionTime = System.currentTimeMillis ();
-                    rightButtonPusher.setToUpperLim ();
-                    while (!((option1Red || option1Blue) && (option2Red || option2Blue)))
-                        NiFTFlow.pauseForSingleFrame ();
-                    rightButtonPusher.setServoPosition (0.5);
-                    additionalExtensionTime = System.currentTimeMillis () - additionalExtensionTime;
-                    extensionTime += additionalExtensionTime;
+                    driveDistance = 100;
+                    drivePower = 0.35;
                 }
+
+
+                //Drive based on state determined previously.
+                drive (TerminationType.ENCODER_DIST, driveDistance, drivePower);
 
                 //If this is a reset run then try again.
                 if (failedAttempts != -1)
                 {
-                    //Drive based on state determined previously.
-                    drive (TerminationType.ENCODER_DIST, driveDistance, drivePower);
-
                     //Run the continuous rotation servo out to press, then back in.
                     rightButtonPusher.setToUpperLim ();
                     NiFTFlow.pauseForMS (gapBetweenWallAndSensorApparatus * 67); //Those cm we excluded previously.
                     rightButtonPusher.setToLowerLim ();
                     NiFTFlow.pauseForMS (gapBetweenWallAndSensorApparatus * 67 - 300);
                     rightButtonPusher.setServoPosition (.5);
-
-                    //Start driving.
-                    startDrivingAt (-1 * Math.signum (drivePower) * BEACON_DP);
-                    //While we haven't gotten on the line and seen distinct colors (can't vary).
-                    startTime = System.currentTimeMillis ();
-                    tookTooLong = false;
-                    while (!(lineDetectedBelowBot && ((option1Red || option1Blue) && (option2Red || option2Blue))))
-                    {
-                        //it might miss the beacon.
-                        if ((System.currentTimeMillis () - startTime) > 1600)
-                        {
-                            tookTooLong = true;
-                            break;
-                        }
-                        updateColorSensorStates ();
-                        manuallyApplySensorAdjustments (true, true);
-                    }
-
-                    //Stop once centered on the beacon.
-                    hardBrake (100);
-
-                    if (tookTooLong || !(lineDetectedBelowBot && ((option1Red || option1Blue) && (option2Red || option2Blue))))
-                    {
-                        startDrivingAt ((BEACON_DP - 0.05) * autonomousSign);
-
-                        while (!(lineDetectedBelowBot && ((option1Red || option1Blue) && (option2Red || option2Blue))))
-                        {
-                            updateColorSensorStates ();
-                            manuallyApplySensorAdjustments (true, true, true);
-                        }
-
-                        hardBrake(100);
-                    }
-
                 }
+
+                //Start driving.
+                centerSelfOnWhiteLine (-1 * Math.signum (drivePower) * BEACON_DP, 2500);
 
                 //Update the number of trials completed so that we know the new drive distance and such.
                 failedAttempts++;
@@ -293,7 +220,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
             //Drive a bit forward from the white line to set up for the next step.
             int distToDrive;
             if (currentBeacon == 1)
-                distToDrive = 1100;
+                distToDrive = 800;
             else
                 distToDrive = 200;
 
@@ -315,5 +242,30 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         NiFTConsole.outputNewSequentialLine ("Knocking the cap ball off of the pedestal...");
         turnToHeading (onBlueAlliance ? 36 : -216, TurnMode.BOTH, 2000);
         drive(TerminationType.ENCODER_DIST, 3000, -autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
+    }
+
+    private void centerSelfOnWhiteLine(double initialPower, long tooLongDelay) throws InterruptedException
+    {
+        //Start driving.
+        startDrivingAt (initialPower);
+        //While we haven't gotten on the line and seen distinct colors (can't vary).
+        long startTime = System.currentTimeMillis ();
+        boolean tookTooLong = false;
+        while (bottomColorSensor.sensor.alpha() < 4)
+        {
+            //it might miss the beacon.
+            if ((System.currentTimeMillis () - startTime) > 2500)
+            {
+                tookTooLong = true;
+                break;
+            }
+            manuallyApplySensorAdjustments (true, true);
+        }
+
+        //Stop once centered on the beacon.
+        hardBrake (100);
+
+        if (tookTooLong || bottomColorSensor.sensor.alpha() < 4)
+            centerSelfOnWhiteLine (-(initialPower - 0.05), (long) (tooLongDelay * 4.0/5.0)); //Recursion at its finest :P
     }
 }

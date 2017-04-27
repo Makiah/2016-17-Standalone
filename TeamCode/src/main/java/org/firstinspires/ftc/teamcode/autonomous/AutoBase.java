@@ -296,6 +296,14 @@ public abstract class AutoBase extends MainRobotBase
         hardBrake (100);
 
         driveConsole.destroy ();
+
+        //If we're running with the range sensor verify that we actually reached the right dist.
+        if (terminationType == TerminationType.RANGE_DIST)
+        {
+            if (frontRangeSensor.validDistCM (stopVal - 1, 1000) > stopVal)
+                drive (terminationType, stopVal, movementPower, adjustments); //Drive again if we haven't actually reached final location.
+
+        }
     }
 
 

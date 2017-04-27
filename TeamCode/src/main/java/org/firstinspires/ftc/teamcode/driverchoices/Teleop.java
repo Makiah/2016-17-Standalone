@@ -15,6 +15,9 @@ public class Teleop extends MainRobotBase
     //All teleop controls are here.
     protected void driverStationSaysGO() throws InterruptedException
     {
+        //Start the flywheel PID task.
+        flywheels.startPIDTask ();
+
         //Normal mode variables
         double leftPower, rightPower,
                 rightPusherPowerLeft, rightPusherPowerRight;
