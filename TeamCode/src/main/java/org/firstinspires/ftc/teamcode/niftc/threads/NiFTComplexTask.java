@@ -5,22 +5,22 @@ import android.os.AsyncTask;
 import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
 
 /**
- * NiFTTask is an easier method of working with AsyncTasks, which provides a convenient process console and a bunch of other functionality to the table for an opmode which requires a bunch of advanced tooling.
+ * NiFTComplexTask is an easier method of working with AsyncTasks, which provides a convenient process console and a bunch of other functionality to the table for an opmode which requires a bunch of advanced tooling.
  *
  * Warning: Moto Gs (and probably also ZTEs) can only run something like 5 tasks in parallel, and have to queue the rest to run once the other tasks are completed.  KEEP THIS IN MIND, since if one task is inexplicably not running this is probably why.
  */
-public abstract class NiFTTask extends AsyncTask <Void, Void, Void>
+public abstract class NiFTComplexTask extends AsyncTask <Void, Void, Void>
 {
     public final String taskName;
     public final NiFTConsole.ProcessConsole processConsole;
     /**
      * Creates a task with a given name and a console with that same name.
      */
-    public NiFTTask ()
+    public NiFTComplexTask ()
     {
         this("Unnamed NiFT Task");
     }
-    public NiFTTask (String taskName)
+    public NiFTComplexTask (String taskName)
     {
         this.taskName = taskName;
         processConsole = new NiFTConsole.ProcessConsole (taskName);
@@ -34,7 +34,7 @@ public abstract class NiFTTask extends AsyncTask <Void, Void, Void>
      * @param params can be safely ignored.
      */
     @Override
-    protected Void doInBackground (Void... params)
+    protected final Void doInBackground (Void... params)
     {
         try
         {
@@ -56,7 +56,7 @@ public abstract class NiFTTask extends AsyncTask <Void, Void, Void>
      * When the stop() method is called, the doInBackground method halts and onCancelled is called, which causes console destruction and task end.
      */
     @Override
-    protected void onCancelled ()
+    protected final void onCancelled ()
     {
         onQuitAndDestroyConsole ();
     }
@@ -87,7 +87,7 @@ public abstract class NiFTTask extends AsyncTask <Void, Void, Void>
      * run() attempts to run the program in a try-catch block, and in the event of an
      * error, stops the attempt and returns an error to the user.
      */
-    public void run()
+    public final void run()
     {
         try
         {
@@ -103,7 +103,7 @@ public abstract class NiFTTask extends AsyncTask <Void, Void, Void>
     /**
      * Stop attempts to cancel the given task, and reports an error if it cannot.
      */
-    public void stop()
+    public final void stop()
     {
         try
         {

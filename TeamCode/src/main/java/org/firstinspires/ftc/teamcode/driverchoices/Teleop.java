@@ -158,7 +158,7 @@ public class Teleop extends MainRobotBase
                     "FBP_up = " + fbpUp
             );
 
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
         }
     }
 

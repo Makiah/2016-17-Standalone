@@ -28,7 +28,7 @@ public class ShootingDebugging extends AutoBase
                     "F actual " + flywheels.getActualTicksSinceUpdate ()
             );
 
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
         }
     }
 }

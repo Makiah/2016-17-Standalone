@@ -92,7 +92,7 @@ public abstract class AutoBase extends MainRobotBase
             );
 
             //Pause for a frame so that the program can exit if need be.
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
         }
 
         //Brake to make sure we are stationary.
@@ -237,7 +237,7 @@ public abstract class AutoBase extends MainRobotBase
             if (adjustments != null)
                 manuallyApplySensorAdjustments (true, adjustments.length >= 1 && adjustments[0], adjustments.length >= 2 && adjustments[1]);
 
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
 
             //Check if the drive should terminate.
             switch (terminationType)

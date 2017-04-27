@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.niftc.examples;
 
 import org.firstinspires.ftc.teamcode.niftc.NiFTBase;
 import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTComplexTask;
 import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
-import org.firstinspires.ftc.teamcode.niftc.threads.NiFTTask;
 
 /**
  * Using multiple tasks is an incredibly important part of programming a sophisticated robot.
@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.niftc.threads.NiFTTask;
  */
 public class MultipleTasks extends NiFTBase
 {
-    private final class DriveRandomly extends NiFTTask
+    private final class DriveRandomly extends NiFTComplexTask
     {
         @Override
         protected void onDoTask () throws InterruptedException
@@ -27,7 +27,7 @@ public class MultipleTasks extends NiFTBase
         }
     }
 
-    private final class DriveRandomlyP2 extends NiFTTask
+    private final class DriveRandomlyP2 extends NiFTComplexTask
     {
         @Override
         protected void onDoTask () throws InterruptedException

@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.niftc.console;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.niftc.NiFTBase;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTComplexTask;
 import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
-import org.firstinspires.ftc.teamcode.niftc.threads.NiFTTask;
 
 import java.util.ArrayList;
 
@@ -22,8 +22,6 @@ public class NiFTConsole
         //Initialize required components.
         sequentialConsoleData = new ArrayList<> ();
         privateProcessConsoles = new ArrayList<> ();
-
-        consoleUpdaterInstance = null;
 
         //Will stop when stop requested.
         startConsoleUpdater ();
@@ -87,13 +85,8 @@ public class NiFTConsole
     /**
      * The task which updates the console at a fairly slow rate but your eye can't tell the difference.
      */
-    private static class ConsoleUpdater extends NiFTTask
+    private static class ConsoleUpdater extends NiFTComplexTask
     {
-        public ConsoleUpdater()
-        {
-            super("Console Task");
-        }
-
         @Override
         protected void onDoTask () throws InterruptedException
         {

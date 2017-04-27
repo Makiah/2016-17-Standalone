@@ -40,7 +40,7 @@ public class SensorDebug extends AutoBase
                     "R motor encoder: " + rightDrive.encoderMotor.getCurrentPosition ()
             );
 
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
         }
     }
 }

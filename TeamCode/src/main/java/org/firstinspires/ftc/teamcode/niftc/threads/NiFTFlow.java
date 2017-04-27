@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.niftc.NiFTBase;
 public class NiFTFlow
 {
     /**
-     * This method "waits" for a given number of seconds by running pauseForSingleFrame() as long as necessary.
+     * This method "waits" for a given number of seconds by running yieldForFrame() as long as necessary.
      *
      * @param ms the milliseconds that the program should wait for.
      * @throws InterruptedException the exception which indicates that the program needs to stop.
@@ -19,7 +19,7 @@ public class NiFTFlow
     {
         long startTime = System.currentTimeMillis ();
         while (System.currentTimeMillis () - startTime <= ms)
-            pauseForSingleFrame ();
+            yieldForFrame ();
     }
 
     /**
@@ -27,7 +27,7 @@ public class NiFTFlow
      *
      * @throws InterruptedException
      */
-    public static void pauseForSingleFrame() throws InterruptedException
+    public static void yieldForFrame () throws InterruptedException
     {
         if (NiFTBase.opModeInstance.isStopRequested())
             throw new InterruptedException();

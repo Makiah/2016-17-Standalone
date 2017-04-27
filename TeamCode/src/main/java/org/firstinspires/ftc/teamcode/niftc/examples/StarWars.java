@@ -17,6 +17,6 @@ public class StarWars extends NiFTBase
 
         //Typically this is where the robot would do things, but we'll just have it wait until the user stops it.
         while (true)
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
     }
 }

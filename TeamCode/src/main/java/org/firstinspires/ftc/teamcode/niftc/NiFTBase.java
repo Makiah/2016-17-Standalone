@@ -53,7 +53,7 @@ public abstract class NiFTBase extends LinearOpMode
             try
             {
                 while (true)
-                    NiFTFlow.pauseForSingleFrame ();
+                    NiFTFlow.yieldForFrame ();
             }
             catch (InterruptedException e2) {} //The user has read the message and stops the program.
         }

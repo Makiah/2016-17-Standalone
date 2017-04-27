@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode.autonomous.maintypes;
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
 import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.niftc.threads.NiFTTask;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTComplexTask;
 import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 
 public abstract class BeaconAuto extends AutoBase implements OnAlliance
 {
     //The task which will be used to control harvesting particles while we drive.
-    private class PickUpAndAutoRejectParticles extends NiFTTask
+    private class PickUpAndAutoRejectParticles extends NiFTComplexTask
     {
         public PickUpAndAutoRejectParticles()
         {
@@ -52,7 +52,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 }
 
                 //Pause for a frame.
-                NiFTFlow.pauseForSingleFrame ();
+                NiFTFlow.yieldForFrame ();
             }
         }
 

@@ -49,6 +49,6 @@ public abstract class ResetAuto extends NiFTBase
         rightDrive.setDirectMotorPower (getSign () * .5);
 
         while (true)
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
     }
 }
