@@ -1,10 +1,9 @@
-package org.firstinspires.ftc.teamcode.console;
-
-import android.os.AsyncTask;
+package org.firstinspires.ftc.teamcode.niftc.console;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.NiFTBase;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.NiFTBase;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTComplexTask;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 
 import java.util.ArrayList;
 
@@ -30,17 +29,19 @@ public class NiFTConsole
 
     /*-- USE TO OUTPUT DATA IN A SLIGHTLY BETTER WAY THAT LINEAR OP MODES PROVIDE --*/
     private static ArrayList<String> sequentialConsoleData; //Lines being added and removed.
-    public static void outputNewSequentialLine(String newLine)
+
+    public static void outputNewSequentialLine (String newLine)
     {
         final int maxSequentialLines = 13;
 
         //Add new line at beginning of the lines.
-        sequentialConsoleData.add(0, newLine);
+        sequentialConsoleData.add (0, newLine);
         //If there is more than 5 lines there, remove one.
-        if (sequentialConsoleData.size() > maxSequentialLines)
-            sequentialConsoleData.remove(maxSequentialLines);
+        if (sequentialConsoleData.size () > maxSequentialLines)
+            sequentialConsoleData.remove (maxSequentialLines);
     }
-    public static void appendToLastSequentialLine(String toAppend)
+
+    public static void appendToLastSequentialLine (String toAppend)
     {
         String result = sequentialConsoleData.get (0) + toAppend;
         sequentialConsoleData.remove (0);
@@ -50,13 +51,14 @@ public class NiFTConsole
     /**
      * To get a private process console, create a new NiFTConsole.ProcessConsole(<name here>) and then run updateWith() to provide new content.
      */
-    private static ArrayList <ProcessConsole> privateProcessConsoles;
+    private static ArrayList<ProcessConsole> privateProcessConsoles;
+
     public static class ProcessConsole
     {
         private final String processName;
         private String[] processData;
 
-        public ProcessConsole(String processName)
+        public ProcessConsole (String processName)
         {
             this.processName = processName;
             processData = new String[0];
@@ -64,71 +66,68 @@ public class NiFTConsole
             privateProcessConsoles.add (this);
         }
 
-        public void updateWith(String... processData)
+        public void updateWith (String... processData)
         {
             this.processData = processData;
         }
 
-        public void destroy()
+        public void destroy ()
         {
-            privateProcessConsoles.remove(this);
+            privateProcessConsoles.remove (this);
         }
-        public void revive() { privateProcessConsoles.add(this); }
+
+        public void revive ()
+        {
+            privateProcessConsoles.add (this);
+        }
     }
 
     /**
      * The task which updates the console at a fairly slow rate but your eye can't tell the difference.
      */
-    private static class ConsoleUpdater extends AsyncTask <Void, Void, Void>
+    private static class ConsoleUpdater extends NiFTComplexTask
     {
         @Override
-        protected Void doInBackground (Void... params)
+        protected void onDoTask () throws InterruptedException
         {
-            consoleUpdaterInstance = this;
-
-            try
+            while (true)
             {
-                while (true)
-                {
-                    rebuildConsole ();
-                    NiFTFlow.pauseForMS (50);
-                }
+                rebuildConsole ();
+                NiFTFlow.pauseForMS (50);
             }
-            catch (InterruptedException e)
-            {
-                outputNewSequentialLine ("Got end of program: ending console updates!");
-                cancel (true);
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onCancelled ()
-        {
-            consoleUpdaterInstance = null;
         }
     }
+
     private static ConsoleUpdater consoleUpdaterInstance;
-    public static void startConsoleUpdater()
+
+    /**
+     * Creates a new console updater instance and runs it.
+     */
+    public static void startConsoleUpdater ()
     {
         if (consoleUpdaterInstance == null)
         {
-            new ConsoleUpdater ().executeOnExecutor (AsyncTask.THREAD_POOL_EXECUTOR);
+            consoleUpdaterInstance = new ConsoleUpdater ();
+            consoleUpdaterInstance.run();
         }
     }
-    public static void stopConsoleUpdater()
+
+    /**
+     * Nullifies a new console instance and stops it.
+     */
+    public static void stopConsoleUpdater ()
     {
         if (consoleUpdaterInstance != null)
         {
-            consoleUpdaterInstance.cancel (true);
+            consoleUpdaterInstance.stop ();
+            consoleUpdaterInstance = null;
         }
     }
 
     /**
      * Rebuilds the whole console (call minimally, allow the task to take care of it.)
      */
-    public static void rebuildConsole()
+    public static void rebuildConsole ()
     {
         final Telemetry mainTelemetry = NiFTBase.opModeInstance.telemetry;
 

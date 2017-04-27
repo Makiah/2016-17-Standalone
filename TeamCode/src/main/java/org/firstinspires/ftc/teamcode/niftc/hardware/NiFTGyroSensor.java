@@ -1,8 +1,8 @@
-package org.firstinspires.ftc.teamcode.hardware;
+package org.firstinspires.ftc.teamcode.niftc.hardware;
 
 import com.qualcomm.robotcore.hardware.GyroSensor;
 
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 
 /**
  * Encapsulates the gyro sensor in an easy to access set of methods.

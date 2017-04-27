@@ -1,10 +1,12 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.niftc;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.music.NiFTMusic;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.music.NiFTMusic;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTSimpleTask;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTTaskPackage;
 
 /**
  * NiFTBase is the class from which all user OpModes should inherit.  With advanced error handling, it takes care of the scenarios in which the user requests an early stop, fails to take an error into account, etc.
@@ -28,6 +30,7 @@ public abstract class NiFTBase extends LinearOpMode
         {
             //Classes such as NiFTMusic require this so that they can get the context they require.
             opModeInstance = this;
+            NiFTSimpleTask.generalTaskPackage = new NiFTTaskPackage ("General Task Pool");
             NiFTConsole.reset ();
 
             //REQUIRED in child classes.
@@ -53,7 +56,7 @@ public abstract class NiFTBase extends LinearOpMode
             try
             {
                 while (true)
-                    NiFTFlow.pauseForSingleFrame ();
+                    NiFTFlow.yieldForFrame ();
             }
             catch (InterruptedException e2) {} //The user has read the message and stops the program.
         }

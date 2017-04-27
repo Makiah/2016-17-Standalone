@@ -3,12 +3,12 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.MainRobotBase;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.hardware.NiFTColorSensor;
-import org.firstinspires.ftc.teamcode.hardware.NiFTGyroSensor;
-import org.firstinspires.ftc.teamcode.hardware.NiFTRangeSensor;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
-import org.firstinspires.ftc.teamcode.threads.NiFTTask;
+import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTColorSensor;
+import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTGyroSensor;
+import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTRangeSensor;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTComplexTask;
 
 /**
  * Initializes autonomous-specific hardware, with just sensors.  Also includes driving methods.
@@ -57,7 +57,7 @@ public abstract class AutoBase extends MainRobotBase
     protected enum SensorStopType { Distance, Ultrasonic, BottomColorAlpha }
 
     //A new instance is instantiated upon starting a new drive.
-    protected final class SelfAdjustingDriveTask extends NiFTTask
+    protected final class SelfAdjustingDriveTask extends NiFTComplexTask
     {
         private final double RPS;
         private final boolean useRangeSensor;
@@ -178,7 +178,7 @@ public abstract class AutoBase extends MainRobotBase
                     break;
             }
 
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
         }
 
         //End the drive task
@@ -243,7 +243,7 @@ public abstract class AutoBase extends MainRobotBase
                     "Stopping if possible in " + (maxTime - (System.currentTimeMillis () - startTime) + "ms")
             );
 
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
         }
         while (System.currentTimeMillis () - startTime < maxTime || Math.abs (gyroscope.getOffFromHeading ()) >= 10);
 

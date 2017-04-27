@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.debugging;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 
 @Autonomous(name = "Shooting - PID Debug", group = "Utility Group")
 
@@ -28,7 +28,7 @@ public class ShootingDebugging extends AutoBase
                     "F actual " + flywheels.getActualTicksSinceUpdate ()
             );
 
-            NiFTFlow.pauseForSingleFrame ();
+            NiFTFlow.yieldForFrame ();
         }
     }
 }

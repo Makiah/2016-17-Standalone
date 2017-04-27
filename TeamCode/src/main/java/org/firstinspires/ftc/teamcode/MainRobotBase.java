@@ -3,10 +3,11 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.hardware.NiFTInitializer;
-import org.firstinspires.ftc.teamcode.hardware.NiFTMotorController;
-import org.firstinspires.ftc.teamcode.hardware.NiFTServo;
+import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.NiFTBase;
+import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTInitializer;
+import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTMotorController;
+import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTServo;
 
 /**
  * This base class contains the robot initialization steps for hardware used in both autonomous and teleop.

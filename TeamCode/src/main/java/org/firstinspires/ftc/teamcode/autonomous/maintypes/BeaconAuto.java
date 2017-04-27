@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.autonomous.maintypes;
 
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
-import org.firstinspires.ftc.teamcode.console.NiFTConsole;
-import org.firstinspires.ftc.teamcode.threads.NiFTFlow;
-import org.firstinspires.ftc.teamcode.threads.NiFTTask;
+import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTComplexTask;
 
 /**
  * This class is the base class for red and blue beacon autonomouses.
@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.threads.NiFTTask;
 public abstract class BeaconAuto extends AutoBase implements OnAlliance
 {
     //The task which will be used to control harvesting particles while we drive.
-    private final class PickUpAndAutoRejectParticles extends NiFTTask
+    private final class PickUpAndAutoRejectParticles extends NiFTComplexTask
     {
         public PickUpAndAutoRejectParticles()
         {
@@ -65,7 +65,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 );
 
                 //Pause for a frame.
-                NiFTFlow.pauseForSingleFrame ();
+                NiFTFlow.yieldForFrame ();
             }
         }
 
@@ -151,7 +151,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
             rightButtonPusher.setToUpperLim ();
             long timeToSeeDistinctColors = System.currentTimeMillis ();
             while (!((option1Red && option2Blue || option2Red && option1Blue)))
-                NiFTFlow.pauseForSingleFrame ();
+                NiFTFlow.yieldForFrame ();
             timeToSeeDistinctColors = System.currentTimeMillis () - timeToSeeDistinctColors;
             long idealButtonPressTime = (long) (distFromWall * 67) - timeToSeeDistinctColors;
             rightButtonPusher.setServoPosition (0.5); //Stop vex motor
@@ -207,7 +207,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
                 while (bottomColorSensor.sensor.alpha () <= 4 || !((option1Red || option1Blue) && (option2Red || option2Blue)))
                 {
                     updateColorSensorStates ();
-                    NiFTFlow.pauseForSingleFrame ();
+                    NiFTFlow.yieldForFrame ();
                 }
                 drivingTask.stop();
 
