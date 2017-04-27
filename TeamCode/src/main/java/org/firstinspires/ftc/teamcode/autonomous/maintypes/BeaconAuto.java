@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.maintypes;
 
+import com.qualcomm.robotcore.util.Range;
+
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
 import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
@@ -22,7 +24,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         protected void onDoTask () throws InterruptedException
         {
             //Set initial harvester power.
-            harvester.setDirectMotorPower (.8);
+            harvester.setDirectMotorPower (.5);
             flywheels.setDirectMotorPower (-.4);
 
             //Start the task which actually looks at the color of the sensors.
@@ -30,24 +32,24 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
             {
                 if (getAlliance () == Alliance.BLUE)
                 {
-                    if (particleColorSensor.sensor.blue () > 3)
+                    if (particleColorSensor.sensor.blue () > 12)
                         pickedUpParticles++;
-                    else if (particleColorSensor.sensor.red () > 3)
+                    else if (particleColorSensor.sensor.red () > 12)
                     {
                         harvester.setDirectMotorPower (-1);
                         NiFTFlow.pauseForMS (1500);
-                        harvester.setDirectMotorPower (.8);
+                        harvester.setDirectMotorPower (.5);
                     }
                 }
                 else
                 {
-                    if (particleColorSensor.sensor.red () > 3)
+                    if (particleColorSensor.sensor.red () > 12)
                         pickedUpParticles++;
-                    else if (particleColorSensor.sensor.blue () > 3)
+                    else if (particleColorSensor.sensor.blue () > 12)
                     {
                         harvester.setDirectMotorPower (-1);
                         NiFTFlow.pauseForMS (1500);
-                        harvester.setDirectMotorPower (.8);
+                        harvester.setDirectMotorPower (.5);
                     }
                 }
 
@@ -73,7 +75,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
     private boolean option1Red, option2Red, option1Blue, option2Blue;
     private void updateColorSensorStates ()
     {
-        final int redThreshold = 1, blueThreshold = 3;
+        final int redThreshold = 1, blueThreshold = 2;
         option1Blue = option1ColorSensor.sensor.blue () >= blueThreshold;
         option1Red = option1ColorSensor.sensor.red () >= redThreshold && !option1Blue;
         option2Blue = option2ColorSensor.sensor.blue () >= blueThreshold;
@@ -84,6 +86,8 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
     @Override
     protected void driverStationSaysGO () throws InterruptedException
     {
+
+
         //The power at which the robot will attempt to drive to ensure accuracy.
         final double BEACON_DP = 0.25;
 
@@ -133,8 +137,8 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         //Extend pusher so that we are right up next to the wall.
         NiFTConsole.outputNewSequentialLine ("Extending to become close to the wall...");
         double distFromWall = sideRangeSensor.validDistCM (20, 2000); //Make sure valid.
-        int gapBetweenWallAndSensorApparatus = 10;
-        long extensionTime = (long) ((distFromWall - gapBetweenWallAndSensorApparatus) * 67);
+        int gapBetweenWallAndSensorApparatus = 18;
+        long extensionTime = (long) Range.clip(((distFromWall - gapBetweenWallAndSensorApparatus) * 67), 0, 3000);
         rightButtonPusher.setToUpperLim ();
         NiFTFlow.pauseForMS (extensionTime);
         rightButtonPusher.setServoPosition (0.5);
@@ -143,7 +147,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         for (int currentBeacon = 1; currentBeacon <= 2; currentBeacon++)
         {
             /*------- STEP 2: FIND AND CENTER SELF ON BEACON --------*/
-            centerSelfOnWhiteLine (BEACON_DP * autonomousSign, 3000);
+            centerSelfOnWhiteLine (BEACON_DP * autonomousSign, 4000);
 
             /*------- STEP 3: PRESS AND VERIFY THE BEACON!!!!! -------*/
 
@@ -239,9 +243,11 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         /*------- STEP 4: PARK AND KNOCK OFF THE CAP BALL -------*/
 
-        NiFTConsole.outputNewSequentialLine ("Knocking the cap ball off of the pedestal...");
-        turnToHeading (onBlueAlliance ? 36 : -216, TurnMode.BOTH, 2000);
-        drive(TerminationType.ENCODER_DIST, 3000, -autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
+//        NiFTConsole.outputNewSequentialLine ("Knocking the cap ball off of the pedestal...");
+//        rightButtonPusher.setToLowerLim ();
+//        turnToHeading (onBlueAlliance ? 36 : -216, TurnMode.BOTH, 3000);
+//        rightButtonPusher.setServoPosition (0.5);
+//        drive(TerminationType.ENCODER_DIST, 3000, -autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
     }
 
     private void centerSelfOnWhiteLine(double initialPower, long tooLongDelay) throws InterruptedException
@@ -266,6 +272,6 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         hardBrake (100);
 
         if (tookTooLong || bottomColorSensor.sensor.alpha() < 4)
-            centerSelfOnWhiteLine (-(initialPower - 0.05), (long) (tooLongDelay * 4.0/5.0)); //Recursion at its finest :P
+            centerSelfOnWhiteLine (-(initialPower * 4.0/5.0), (long) (tooLongDelay * 5.0/6.0)); //Recursion at its finest :P
     }
 }

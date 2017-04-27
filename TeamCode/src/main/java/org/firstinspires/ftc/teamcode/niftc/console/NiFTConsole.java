@@ -23,6 +23,8 @@ public class NiFTConsole
         sequentialConsoleData = new ArrayList<> ();
         privateProcessConsoles = new ArrayList<> ();
 
+        consoleUpdaterInstance = null;
+
         //Will stop when stop requested.
         startConsoleUpdater ();
     }
