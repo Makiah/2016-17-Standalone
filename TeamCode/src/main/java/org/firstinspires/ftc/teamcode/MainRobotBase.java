@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
 import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTInitializer;
 import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTMotorController;
 import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTServo;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTTaskPackage;
 
 public abstract class MainRobotBase extends NiFTBase
 {
@@ -30,6 +31,7 @@ public abstract class MainRobotBase extends NiFTBase
 
         /*-------------------- DRIVING MOTORS -------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up drive motors...");
+        NiFTMotorController.pidTaskPackage = new NiFTTaskPackage ("PID Tasks");
         //The back motors are the ones that have functional encoders, while the front ones don't currently work.
         leftDrive = new NiFTMotorController ("Left Drive", "backLeft", "frontLeft").
                 setRPSConversionFactor (0.40).

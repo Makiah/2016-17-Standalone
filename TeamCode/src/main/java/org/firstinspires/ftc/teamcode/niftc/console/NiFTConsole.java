@@ -23,8 +23,6 @@ public class NiFTConsole
         sequentialConsoleData = new ArrayList<> ();
         privateProcessConsoles = new ArrayList<> ();
 
-        consoleUpdaterInstance = null;
-
         //Will stop when stop requested.
         startConsoleUpdater ();
     }
@@ -59,6 +57,7 @@ public class NiFTConsole
     {
         private final String processName;
         private String[] processData;
+        public boolean outputtingData = true;
 
         public ProcessConsole (String processName)
         {
@@ -73,14 +72,9 @@ public class NiFTConsole
             this.processData = processData;
         }
 
-        public void destroy ()
+        public void end()
         {
-            privateProcessConsoles.remove (this);
-        }
-
-        public void revive ()
-        {
-            privateProcessConsoles.add (this);
+            privateProcessConsoles.remove(this);
         }
     }
 
@@ -141,12 +135,15 @@ public class NiFTConsole
             //Add all private console data.
             for (ProcessConsole pConsole : privateProcessConsoles)
             {
-                mainTelemetry.addLine ("----- " + pConsole.processName + " -----");
+                if (pConsole.outputtingData)
+                {
+                    mainTelemetry.addLine ("----- " + pConsole.processName + " -----");
 
-                for (String line : pConsole.processData)
-                    mainTelemetry.addLine (line);
+                    for (String line : pConsole.processData)
+                        mainTelemetry.addLine (line);
 
-                mainTelemetry.addLine ("");
+                    mainTelemetry.addLine ("");
+                }
             }
 
             mainTelemetry.addLine ("----- Sequential Data -----");

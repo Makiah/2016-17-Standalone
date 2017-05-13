@@ -48,8 +48,8 @@ public class NiFTOpMode extends NiFTBase
     protected void driverStationSaysGO () throws InterruptedException
     {
         //Enable PID, which is a new AsyncTask which runs independently (how cool is that?!)
-        leftDrive.startPIDTask ();
-        rightDrive.startPIDTask ();
+        leftDrive.setPIDStatus (true);
+        rightDrive.setPIDStatus (true);
 
         //Start moving for 10 seconds.
         leftDrive.setRPS (3);
@@ -67,7 +67,7 @@ public class NiFTOpMode extends NiFTBase
         leftDrive.setRPS (0);
         rightDrive.setRPS (0);
 
-        leftDrive.stopPIDTask ();
-        rightDrive.stopPIDTask ();
+        leftDrive.setPIDStatus (false);
+        rightDrive.setPIDStatus (false);
     }
 }

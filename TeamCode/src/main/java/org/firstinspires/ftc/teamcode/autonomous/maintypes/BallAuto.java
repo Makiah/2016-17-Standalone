@@ -45,7 +45,8 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
             settingsConsole.updateWith (
                     "Delay (DPAD) is " + delay,
                     "Getting cap ball (Y) = " + getCapBall,
-                    "Parking on CV (X) = " + parkOnCenterVortex
+                    "Parking on Center Vortex (X) = " + parkOnCenterVortex,
+                    "Ramming alliance robot = true"
             );
 
             idle ();
@@ -60,7 +61,7 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
         final boolean onBlueAlliance = (getAlliance() == Alliance.BLUE);
         final int autonomousSign = (onBlueAlliance ? 1 : -1);
 
-        flywheels.startPIDTask ();
+        flywheels.setPIDStatus (true);
         flywheels.setRPS (18.2);
 
         //Drive to the cap ball.
@@ -72,7 +73,7 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
         harvester.setDirectMotorPower (1);
         NiFTFlow.pauseForMS (2200);
         harvester.setDirectMotorPower (0);
-        flywheels.stopPIDTask ();
+        flywheels.setPIDStatus (false);
         flywheels.setRPS (0);
 
         if (parkOnCenterVortex)

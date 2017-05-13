@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.niftc.threads;
 
+import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Used to divvy up SimpleTasks into certain groups.
+ * Used to divvy up SimpleTasks into certain groups based on their functionality so that they don't count toward the 5 complex tasks limit.
  */
 public class NiFTTaskPackage
 {
@@ -12,6 +14,7 @@ public class NiFTTaskPackage
      * Might as well include a name for the group of tasks!
      */
     public final String groupName;
+    private NiFTConsole.ProcessConsole processConsole;
     public NiFTTaskPackage (String groupName)
     {
         this(groupName, null);
@@ -21,14 +24,20 @@ public class NiFTTaskPackage
         this.groupName = groupName;
 
         //Populate task list.
-        if (tasks != null)
-            taskList.addAll(Arrays.asList (tasks));
+        add(tasks);
+
+        //Start updating packages.
+        startPackage ();
     }
 
     /**
      * Place tasks in here, which will be run by the complex task class nested in this class.
      */
-    public ArrayList<NiFTSimpleTask> taskList = new ArrayList<> ();
+    private ArrayList<NiFTSimpleTask> taskList = new ArrayList<> ();
+    public void add(NiFTSimpleTask... simpleTasks)
+    {
+        taskList.addAll(Arrays.asList (simpleTasks));
+    }
 
     /**
      * The SimpleTaskUpdater is a ComplexTask which takes up one AsyncTask spot but runs more than one task.
@@ -50,8 +59,8 @@ public class NiFTTaskPackage
                 {
                     //Run if possible.
                     NiFTSimpleTask task = taskList.get(i);
-                    if (task.nextRunTime < System.currentTimeMillis ())
-                        task.nextRunTime = task.onContinueTask () + System.currentTimeMillis ();
+                    if (task.active && task.nextRunTime < System.currentTimeMillis ())
+                        task.nextRunTime = task.onUpdate () + System.currentTimeMillis ();
                 }
 
                 //Exit program if stop requested, otherwise yield to other threads.
@@ -60,7 +69,7 @@ public class NiFTTaskPackage
         }
     }
     private SimpleTaskUpdater taskUpdaterInstance = null;
-    public void startTaskUpdater()
+    public void startPackage ()
     {
         if (taskUpdaterInstance == null)
         {
@@ -68,7 +77,7 @@ public class NiFTTaskPackage
             taskUpdaterInstance.run ();
         }
     }
-    public void stopTaskUpdater()
+    public void stopPackage ()
     {
         if (taskUpdaterInstance != null)
         {

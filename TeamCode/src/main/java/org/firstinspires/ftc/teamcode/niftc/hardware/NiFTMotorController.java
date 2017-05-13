@@ -4,8 +4,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.niftc.threads.NiFTComplexTask;
 import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTSimpleTask;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTTaskPackage;
 
 /**
  * Accurate and helpful PID is a difficult feat to accomplish, this a simplistic approach which works fairly well and is highly customizable.
@@ -18,6 +19,11 @@ import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 public class NiFTMotorController
 {
     /**
+     * The package which contains all PID tasks (run sequentially in one complex task instance.
+     */
+    public static NiFTTaskPackage pidTaskPackage;
+
+    /**
      * Most encoded motor sets have one motor, but this can often vary.
      */
     public final String name;
@@ -27,9 +33,9 @@ public class NiFTMotorController
     /**
      * This constructor enables a variable number of linked motors to be specified easily, with a single motor that has an encoder attached.  This is ideal for drive motors, but can be also used with single motor systems (see constructor below)
      *
-     * @param name the name of the motor controller.
-     * @param encoderMotorName the config name of the encoder motor.
-     * @param linkedMotorNames the names of the linked motors.
+     * @param name
+     * @param encoderMotorName
+     * @param linkedMotorNames
      */
     public NiFTMotorController (String name, String encoderMotorName, String... linkedMotorNames)
     {
@@ -46,9 +52,10 @@ public class NiFTMotorController
         } else
             linkedMotors = null;
 
+        pidInstance = new PIDTask ();
+
         resetEncoder ();
     }
-
     public NiFTMotorController (String name, String encoderMotorName)
     {
         this (name, encoderMotorName, null);
@@ -58,12 +65,10 @@ public class NiFTMotorController
      * The RPS conversion factor is a variable which houses the conversion factor from power to revolutions per second.  The motor should spin at a constant rate, but there are often different factors which prevent this from happening all the time, namely friction and stress.  This coefficient embodies the way that this fact is combatted.
      */
     private double rpsConversionFactor = .25;
-
     public double getRPSConversionFactor () //Primarily for debugging.
     {
         return rpsConversionFactor;
     }
-
     public NiFTMotorController setRPSConversionFactor (double rpsConversionFactor)
     {
         this.rpsConversionFactor = rpsConversionFactor;
@@ -203,60 +208,37 @@ public class NiFTMotorController
     }
 
     /*------ THREADING ------*/
-
     /**
      * This task is a simplistic way to call the update pid function rapidly but without having to change the autonomous files to include this during every loop.
      */
-    private final class PIDTask extends NiFTComplexTask
+    public PIDTask pidInstance;
+    private final class PIDTask extends NiFTSimpleTask
     {
         public PIDTask ()
         {
-            super (name + " PID Console");
+            super (pidTaskPackage, name + " PID Console");
         }
 
         @Override
-        protected void onDoTask () throws InterruptedException
+        protected long onUpdate () throws InterruptedException
         {
-            while (true)
-            {
-                if (System.currentTimeMillis () - lastAdjustTime >= refreshRate)
-                {
-                    manuallyUpdatePID ();
+            manuallyUpdatePID ();
 
-                    processConsole.updateWith (
-                            "Current RPS conversion = " + rpsConversionFactor,
-                            "Expected = " + getExpectedTicksSinceUpdate (),
-                            "Actual = " + getActualTicksSinceUpdate ()
-                    );
-                }
+            processConsole.updateWith (
+                    "Current RPS conversion = " + rpsConversionFactor,
+                    "Expected = " + getExpectedTicksSinceUpdate (),
+                    "Actual = " + getActualTicksSinceUpdate ()
+            );
 
-                NiFTFlow.pauseForMS (30);
-            }
+            return refreshRate;
         }
     }
 
-    private PIDTask pidInstance;
-
-    /**
-     * Creates and destroys respectively the instances of new tasks.
-     */
-    public void startPIDTask ()
+    public void setPIDStatus (boolean state)
     {
-        if (pidInstance == null)
-        {
-            pidInstance = new PIDTask ();
-            pidInstance.run ();
-        }
+        pidInstance.active = state;
     }
 
-    public void stopPIDTask ()
-    {
-        if (pidInstance != null)
-        {
-            pidInstance.stop ();
-            pidInstance = null;
-        }
-    }
 
     /******* PID STUFF *********/
     private double desiredRPS = 0;
@@ -279,12 +261,10 @@ public class NiFTMotorController
     }
 
     private double expectedTicksSinceUpdate, actualTicksSinceUpdate;
-
     public double getExpectedTicksSinceUpdate ()
     {
         return expectedTicksSinceUpdate;
     }
-
     public double getActualTicksSinceUpdate ()
     {
         return actualTicksSinceUpdate;

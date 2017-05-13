@@ -16,7 +16,7 @@ public class Teleop extends MainRobotBase
     protected void driverStationSaysGO() throws InterruptedException
     {
         //Start the flywheel PID task.
-        flywheels.startPIDTask ();
+        flywheels.setPIDStatus (false);
 
         //Normal mode variables
         double leftPower, rightPower,
@@ -31,7 +31,7 @@ public class Teleop extends MainRobotBase
 
         NiFTConsole.ProcessConsole teleopConsole = new NiFTConsole.ProcessConsole ("Teleop");
 
-        //Keep looping while opmode is active (waiting a hardware cycle after all of this is completed, just like loop())
+        //Keep looping while opmode is outputtingData (waiting a hardware cycle after all of this is completed, just like loop())
         while (true)
         {
             /*----------------------- CONTROLLER #1 -----------------------*/
@@ -61,29 +61,6 @@ public class Teleop extends MainRobotBase
             else if (gamepad1.y) {
                 speedCoefficient = 1.0;
                 capBallMode = false;
-            }
-
-            if (gamepad1.right_bumper) {
-                speedCoefficient = 0.7;
-                frontButtonPusher.setToLowerLim ();
-            }
-            else if (!capBallMode) {
-                speedCoefficient = 1.0;
-                frontButtonPusher.setToUpperLim ();
-            }
-            else {
-                frontButtonPusher.setToUpperLim ();
-            }
-
-            /*---------- Clamp ---------*/
-            if (gamepad1.left_bumper || (gamepad2.left_bumper && capBallMode2))
-                capBallHolder.setServoPosition (capBallHolder.getServoPosition () + 0.05);
-            else if (gamepad1.left_trigger > 0.5 || (gamepad2.left_trigger > 0.5 && capBallMode2))
-                capBallHolder.setServoPosition (capBallHolder.getServoPosition () - 0.01);
-
-            /*------ Open Clamp ------*/
-            if (gamepad1.back || gamepad2.back) {
-                capBallHolder.setToUpperLim ();
             }
 
             /*--------------------- CONTROLLER #2 --------------------*/
@@ -137,17 +114,6 @@ public class Teleop extends MainRobotBase
             if (!(gamepad2.left_trigger > 0.5) && !gamepad2.left_bumper) {
                 pressingFlywheelC = false;
             }
-
-            /*-------------- Side Beacon Pushers ------------*/
-            rightPusherPowerLeft = Range.clip(gamepad2.left_stick_x, -1, 1);
-            rightPusherPowerRight = Range.clip(gamepad2.right_stick_x, -1, 1);
-
-            if (rightPusherPowerLeft > 0.5 || rightPusherPowerRight > 0.5)
-                rightButtonPusher.setToUpperLim ();
-            else if (rightPusherPowerLeft < -0.5 || rightPusherPowerRight < -0.5)
-                rightButtonPusher.setToLowerLim ();
-            else
-                rightButtonPusher.setServoPosition (0.5);
 
             /*----------- Data Output -----------*/
             teleopConsole.updateWith (

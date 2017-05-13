@@ -15,7 +15,7 @@ public class ShootingDebugging extends AutoBase
     {
         //Set the motor powers.
         flywheels.setRPS (19);
-        flywheels.startPIDTask ();
+        flywheels.setPIDStatus (true);
         harvester.setDirectMotorPower (1);
 
         NiFTConsole.ProcessConsole processConsole = new NiFTConsole.ProcessConsole ("Shooting Debugger");

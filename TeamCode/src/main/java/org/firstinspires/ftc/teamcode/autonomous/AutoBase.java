@@ -99,7 +99,7 @@ public abstract class AutoBase extends MainRobotBase
         hardBrake (100);
 
         //Remove the console.
-        turnConsole.destroy ();
+        turnConsole.end ();
     }
 
     /*--- Encoders ---*/
@@ -295,7 +295,7 @@ public abstract class AutoBase extends MainRobotBase
         //Become stationary.
         hardBrake (100);
 
-        driveConsole.destroy ();
+        driveConsole.end ();
 
         //If we're running with the range sensor verify that we actually reached the right dist.
         if (terminationType == TerminationType.RANGE_DIST)

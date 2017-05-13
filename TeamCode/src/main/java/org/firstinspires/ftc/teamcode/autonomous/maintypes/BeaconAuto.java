@@ -86,8 +86,6 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
     @Override
     protected void driverStationSaysGO () throws InterruptedException
     {
-
-
         //The power at which the robot will attempt to drive to ensure accuracy.
         final double BEACON_DP = 0.25;
 
@@ -100,7 +98,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         //Start the flywheels so that PID has time to adjust them.
         NiFTConsole.outputNewSequentialLine ("Starting flywheels...");
         flywheels.setRPS (18.2);
-        flywheels.startPIDTask ();
+        flywheels.setPIDStatus (true);
 
         //Drive until we are just far enough from the cap ball to score reliably.
         NiFTConsole.outputNewSequentialLine ("Driving forward to the cap ball to score...");
@@ -115,7 +113,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         //Stop flywheels and harvester.
         flywheels.setRPS (0);
-        flywheels.stopPIDTask ();
+        flywheels.setPIDStatus (false);
         harvester.setDirectMotorPower (0);
 
         //Turn to face the wall directly.
@@ -243,11 +241,11 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         /*------- STEP 4: PARK AND KNOCK OFF THE CAP BALL -------*/
 
-//        NiFTConsole.outputNewSequentialLine ("Knocking the cap ball off of the pedestal...");
-//        rightButtonPusher.setToLowerLim ();
-//        turnToHeading (onBlueAlliance ? 36 : -216, TurnMode.BOTH, 3000);
-//        rightButtonPusher.setServoPosition (0.5);
-//        drive(TerminationType.ENCODER_DIST, 3000, -autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
+        NiFTConsole.outputNewSequentialLine ("Knocking the cap ball off of the pedestal...");
+        rightButtonPusher.setToLowerLim ();
+        turnToHeading (onBlueAlliance ? 36 : -216, TurnMode.BOTH, 3000);
+        rightButtonPusher.setServoPosition (0.5);
+        drive(TerminationType.ENCODER_DIST, 3000, -autonomousSign, true); //SPRINT TO THE CAP BALL TO PARK
     }
 
     private void centerSelfOnWhiteLine(double initialPower, long tooLongDelay) throws InterruptedException

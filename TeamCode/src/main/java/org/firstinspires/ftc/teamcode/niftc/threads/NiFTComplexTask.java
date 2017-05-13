@@ -75,7 +75,7 @@ public abstract class NiFTComplexTask extends AsyncTask <Void, Void, Void>
     private void onQuitAndDestroyConsole ()
     {
         onQuitTask ();
-        processConsole.destroy ();
+        processConsole.end ();
     }
 
     /**
