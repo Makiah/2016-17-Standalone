@@ -130,7 +130,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
 
         //Turn back to become parallel with the wall.
         NiFTConsole.outputNewSequentialLine ("Turning to become parallel to the wall...");
-        turnToHeading (onBlueAlliance ? 0 : -180, TurnMode.BOTH, 3000);
+        turnToHeading (onBlueAlliance ? 0 : -180, TurnMode.BOTH, onBlueAlliance ? 3500 : 4500);
 
         //Extend pusher so that we are right up next to the wall.
         NiFTConsole.outputNewSequentialLine ("Extending to become close to the wall...");

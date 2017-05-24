@@ -92,6 +92,11 @@ public class NiFTConsole
                 NiFTFlow.pauseForMS (50);
             }
         }
+
+        @Override
+        protected void onQuitTask() {
+            stopConsoleUpdater();
+        }
     }
 
     private static ConsoleUpdater consoleUpdaterInstance;

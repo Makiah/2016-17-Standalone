@@ -4,6 +4,7 @@ import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Used to divvy up SimpleTasks into certain groups based on their functionality so that they don't count toward the 5 complex tasks limit.
@@ -15,15 +16,18 @@ public class NiFTTaskPackage
      */
     public final String groupName;
     private NiFTConsole.ProcessConsole processConsole;
+    private ArrayList<NiFTSimpleTask> taskList;
     public NiFTTaskPackage (String groupName)
     {
         this(groupName, null);
     }
     public NiFTTaskPackage(String groupName, NiFTSimpleTask... tasks)
     {
+        NiFTConsole.outputNewSequentialLine("Creating task package " + groupName);
         this.groupName = groupName;
 
         //Populate task list.
+        taskList = new ArrayList<> ();
         add(tasks);
 
         //Start updating packages.
@@ -33,10 +37,10 @@ public class NiFTTaskPackage
     /**
      * Place tasks in here, which will be run by the complex task class nested in this class.
      */
-    private ArrayList<NiFTSimpleTask> taskList = new ArrayList<> ();
     public void add(NiFTSimpleTask... simpleTasks)
     {
-        taskList.addAll(Arrays.asList (simpleTasks));
+        if (simpleTasks != null)
+            taskList.addAll(Arrays.asList (simpleTasks));
     }
 
     /**
