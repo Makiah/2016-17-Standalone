@@ -30,8 +30,10 @@ public abstract class MainRobotBase extends NiFTBase
         NiFTConsole.appendToLastSequentialLine ("OK!");
 
         /*-------------------- DRIVING MOTORS -------------------*/
-        NiFTConsole.outputNewSequentialLine ("Setting up drive motors...");
+        //Create a new PID task package.
         NiFTMotorController.pidTaskPackage = new NiFTTaskPackage ("PID Tasks");
+
+        NiFTConsole.outputNewSequentialLine ("Setting up drive motors...");
         //The back motors are the ones that have functional encoders, while the front ones don't currently work.
         leftDrive = new NiFTMotorController ("Left Drive", "backLeft", "frontLeft").
                 setRPSConversionFactor (0.40).

@@ -110,7 +110,7 @@ public abstract class AutoBase extends MainRobotBase
         rightDrive.resetEncoder ();
     }
 
-    private int getEncoderPosition () throws InterruptedException
+    public int getEncoderPosition () throws InterruptedException
     {
         return (int) ((leftDrive.encoderMotor.getCurrentPosition () + rightDrive.encoderMotor.getCurrentPosition ()) / 2.0);
     }

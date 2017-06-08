@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.niftc.NiFTBase;
 import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
 import org.firstinspires.ftc.teamcode.niftc.hardware.NiFTMotorController;
 import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTTaskPackage;
 
 public abstract class ResetAuto extends NiFTBase
 {
@@ -16,16 +17,17 @@ public abstract class ResetAuto extends NiFTBase
         //Make sure that the robot components are found and initialized correctly.
         /*------------------- DRIVING MOTORS ----------------------*/
         NiFTConsole.outputNewSequentialLine ("Setting up drive motors...");
+        NiFTMotorController.pidTaskPackage = new NiFTTaskPackage("PID Tasks");
 
         leftDrive = new NiFTMotorController ("Left Drive", "backLeft", "frontLeft").
                 setRPSConversionFactor (0.40).
                 setMotorDirection (DcMotorSimple.Direction.REVERSE).
-                setAdjustmentSensitivity (.00001).
+                setAdjustmentSensitivity (.001).
                 setAdjustmentSensitivityBounds (0.2);
 
         rightDrive = new NiFTMotorController ("Right Drive", "backRight", "frontRight").
                 setRPSConversionFactor (0.36).
-                setAdjustmentSensitivity (.00001).
+                setAdjustmentSensitivity (.001).
                 setAdjustmentSensitivityBounds (0.2);
 
         NiFTConsole.appendToLastSequentialLine ("OK!");

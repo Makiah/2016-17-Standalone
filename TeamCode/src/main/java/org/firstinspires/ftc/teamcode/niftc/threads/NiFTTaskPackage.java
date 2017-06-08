@@ -15,7 +15,6 @@ public class NiFTTaskPackage
      * Might as well include a name for the group of tasks!
      */
     public final String groupName;
-    private NiFTConsole.ProcessConsole processConsole;
     private ArrayList<NiFTSimpleTask> taskList;
     public NiFTTaskPackage (String groupName)
     {
@@ -23,7 +22,7 @@ public class NiFTTaskPackage
     }
     public NiFTTaskPackage(String groupName, NiFTSimpleTask... tasks)
     {
-        NiFTConsole.outputNewSequentialLine("Creating task package " + groupName);
+        NiFTConsole.outputNewSequentialLine("Created task package " + groupName + "...");
         this.groupName = groupName;
 
         //Populate task list.

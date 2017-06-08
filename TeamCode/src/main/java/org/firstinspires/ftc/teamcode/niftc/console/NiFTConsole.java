@@ -137,24 +137,26 @@ public class NiFTConsole
             //Clear all lines.
             mainTelemetry.update ();
 
+            //Add the sequential data.
+            mainTelemetry.addLine ("----- Sequential Data -----");
+            for (String line : sequentialConsoleData)
+            {
+                mainTelemetry.addLine (line);
+            }
+
             //Add all private console data.
             for (ProcessConsole pConsole : privateProcessConsoles)
             {
                 if (pConsole.outputtingData)
                 {
+                    //Line between each console.
+                    mainTelemetry.addLine ("");
+
                     mainTelemetry.addLine ("----- " + pConsole.processName + " -----");
 
                     for (String line : pConsole.processData)
                         mainTelemetry.addLine (line);
-
-                    mainTelemetry.addLine ("");
                 }
-            }
-
-            mainTelemetry.addLine ("----- Sequential Data -----");
-            for (String line : sequentialConsoleData)
-            {
-                mainTelemetry.addLine (line);
             }
 
             //Refresh the console with this new data.
