@@ -25,6 +25,8 @@ public class Teleop extends MainRobotBase
         boolean fbpUp = true;
         boolean capBallMode = false, capBallMode2 = false;
         double flywheelMaxRPS = 35, harvesterMaxRPS = 5;
+        double lastBPress = 0;
+        boolean lightsCurrentlyOn = false;
 
         NiFTConsole.ProcessConsole teleopConsole = new NiFTConsole.ProcessConsole ("Teleop");
 
@@ -70,6 +72,22 @@ public class Teleop extends MainRobotBase
             }
             else {
                 frontButtonPusher.setToUpperLim ();
+            }
+
+            /******* Lights *********/
+            if (gamepad1.b && (System.currentTimeMillis() - lastBPress) > 500)
+            {
+                if (lightsCurrentlyOn)
+                {
+                    lights.setPower(1);
+                    lightsCurrentlyOn = false;
+                }
+                else
+                {
+                    lights.setPower(0);
+                    lightsCurrentlyOn = true;
+                }
+                lastBPress = System.currentTimeMillis();
             }
 
             /************** Clamp **************/
@@ -152,7 +170,8 @@ public class Teleop extends MainRobotBase
                     "Conversion " + flywheels.getRPSConversionFactor (),
                     "Drive power = " + speedCoefficient,
                     "Cap ball mode = " + capBallMode,
-                    "FBP_up = " + fbpUp
+                    "FBP_up = " + fbpUp,
+                    "Lights = " + lightsCurrentlyOn
             );
 
             NiFTFlow.yieldForFrame ();

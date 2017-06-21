@@ -56,9 +56,10 @@ public abstract class NiFTComplexTask extends AsyncTask <Void, Void, Void>
      * When the stop() method is called, the doInBackground method halts and onCancelled is called, which causes console destruction and task end.
      */
     @Override
-    protected final void onCancelled ()
+    protected final void onCancelled (Void result)
     {
         onQuitAndDestroyConsole ();
+        NiFTConsole.outputNewSequentialLine("On cancelled!!!!!");
     }
 
     /**
@@ -107,7 +108,8 @@ public abstract class NiFTComplexTask extends AsyncTask <Void, Void, Void>
     {
         try
         {
-            this.cancel (true);
+            NiFTConsole.outputNewSequentialLine("Got stop()");
+            this.cancel(true);
         }
         catch (Exception e)
         {

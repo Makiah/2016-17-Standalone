@@ -32,7 +32,7 @@ public abstract class AutoBase extends MainRobotBase
         NiFTConsole.ProcessConsole turnConsole = new NiFTConsole.ProcessConsole ("Turning");
 
         //Required variables.
-        double turnBoost = 0.15;
+        double turnBoost = 0.2;
         final double turnCoefficient = 0.0035, initialTurnIntercept = turnBoost;
 
         //Get the start time so that we know when to end.
@@ -64,7 +64,7 @@ public abstract class AutoBase extends MainRobotBase
                 int changeFromLastBoostCheck = Math.abs (lastOffFromHeading - currentOffFromHeading);
                 //Don't start increasing power at the very start of the turn before the robot has had time to accelerate.
                 if (changeFromLastBoostCheck <= 1)
-                    turnBoost += 0.06;
+                    turnBoost += 0.045;
                 else if (changeFromLastBoostCheck >= 7 && turnBoost > initialTurnIntercept)
                     turnBoost -= 0.03;
 
@@ -198,7 +198,7 @@ public abstract class AutoBase extends MainRobotBase
                 else
                 {
                     //Desired range sensor values.
-                    double offFromDistance = rangeSensorReading - 15;
+                    double offFromDistance = rangeSensorReading - 11;
 
                     //Change motor powers based on offFromHeading.
                     rangeSensorAdjustment = Math.signum (offFromDistance) * (Math.abs (offFromDistance) * 0.03);

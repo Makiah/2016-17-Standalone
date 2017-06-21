@@ -17,7 +17,7 @@ public abstract class MainRobotBase extends NiFTBase
     protected NiFTMotorController leftDrive, rightDrive;
     //Other motors
     protected NiFTMotorController harvester, flywheels;
-    protected DcMotor lift;
+    protected DcMotor lift, lights;
     protected NiFTServo rightButtonPusher, frontButtonPusher, capBallHolder;
 
     protected final void initializeHardware () throws InterruptedException
@@ -67,6 +67,8 @@ public abstract class MainRobotBase extends NiFTBase
         lift = NiFTInitializer.initialize (DcMotor.class, "lift");
         lift.setDirection (DcMotorSimple.Direction.REVERSE);
         NiFTConsole.appendToLastSequentialLine ("OK!");
+
+        lights = NiFTInitializer.initialize(DcMotor.class, "lights");
 
         //Certain things are only applicable in autonomous or teleop.
         initializeOpModeSpecificHardware ();
