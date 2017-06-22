@@ -128,6 +128,7 @@ public class NiFTConsole
     /**
      * Rebuilds the whole console (call minimally, allow the task to take care of it.)
      */
+    final static boolean doalbertsdumbthing = true;
     public static void rebuildConsole ()
     {
         final Telemetry mainTelemetry = NiFTBase.opModeInstance.telemetry;
@@ -137,25 +138,46 @@ public class NiFTConsole
             //Clear all lines.
             mainTelemetry.update ();
 
-            //Add the sequential data.
-            mainTelemetry.addLine ("----- Sequential Data -----");
-            for (String line : sequentialConsoleData)
+            if (!doalbertsdumbthing)
             {
-                mainTelemetry.addLine (line);
+                //Add the sequential data.
+                mainTelemetry.addLine("----- Sequential Data -----");
+                for (String line : sequentialConsoleData) {
+                    mainTelemetry.addLine(line);
+                }
+
+                //Add all private console data.
+                for (ProcessConsole pConsole : privateProcessConsoles) {
+                    if (pConsole.outputtingData) {
+                        //Line between each console.
+                        mainTelemetry.addLine("");
+
+                        mainTelemetry.addLine("----- " + pConsole.processName + " -----");
+
+                        for (String line : pConsole.processData)
+                            mainTelemetry.addLine(line);
+                    }
+                }
             }
-
-            //Add all private console data.
-            for (ProcessConsole pConsole : privateProcessConsoles)
+            else
             {
-                if (pConsole.outputtingData)
-                {
-                    //Line between each console.
-                    mainTelemetry.addLine ("");
+                //Add all private console data.
+                for (ProcessConsole pConsole : privateProcessConsoles) {
+                    if (pConsole.outputtingData) {
+                        //Line between each console.
+                        mainTelemetry.addLine("");
 
-                    mainTelemetry.addLine ("----- " + pConsole.processName + " -----");
+                        mainTelemetry.addLine("----- " + pConsole.processName + " -----");
 
-                    for (String line : pConsole.processData)
-                        mainTelemetry.addLine (line);
+                        for (String line : pConsole.processData)
+                            mainTelemetry.addLine(line);
+                    }
+                }
+
+                //Add the sequential data.
+                mainTelemetry.addLine("----- Sequential Data -----");
+                for (String line : sequentialConsoleData) {
+                    mainTelemetry.addLine(line);
                 }
             }
 

@@ -5,10 +5,87 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.autonomous.AutoBase;
 import org.firstinspires.ftc.teamcode.autonomous.OnAlliance;
 import org.firstinspires.ftc.teamcode.niftc.console.NiFTConsole;
+import org.firstinspires.ftc.teamcode.niftc.threads.NiFTComplexTask;
 import org.firstinspires.ftc.teamcode.niftc.threads.NiFTFlow;
 
 public abstract class BallAuto extends AutoBase implements OnAlliance
 {
+    //The instance to which we will reference when stopping and starting the pick up task.
+    private PickUpAndAutoRejectParticles pickUpTask;
+
+    //The task which will be used to control harvesting particles while we drive.
+    private class PickUpAndAutoRejectParticles extends NiFTComplexTask
+    {
+        public PickUpAndAutoRejectParticles()
+        {
+            super("Particle Pick Up Task");
+        }
+
+        private int pickedUpParticles = 0;
+
+        @Override
+        protected void onDoTask () throws InterruptedException
+        {
+            //Set initial harvester power.
+            harvester.setDirectMotorPower (.5);
+            flywheels.setDirectMotorPower (-.4);
+
+            //Start the task which actually looks at the color of the sensors.
+            while (true)
+            {
+                if (getAlliance () == Alliance.BLUE)
+                {
+                    if (particleColorSensor.sensor.blue () > 12)
+                        pickedUpParticles++;
+                    else if (particleColorSensor.sensor.red () > 12)
+                    {
+                        harvester.setDirectMotorPower (-1);
+                        NiFTFlow.pauseForMS (1500);
+                        harvester.setDirectMotorPower (.5);
+                    }
+                }
+                else
+                {
+                    if (particleColorSensor.sensor.red () > 12)
+                        pickedUpParticles++;
+                    else if (particleColorSensor.sensor.blue () > 12)
+                    {
+                        harvester.setDirectMotorPower (-1);
+                        NiFTFlow.pauseForMS (1500);
+                        harvester.setDirectMotorPower (.5);
+                    }
+                }
+
+                //Pause for a frame.
+                NiFTFlow.yieldForFrame ();
+            }
+        }
+
+        @Override
+        protected void onQuitTask ()
+        {
+            NiFTConsole.outputNewSequentialLine("Got onQuitTask()");
+            harvester.setDirectMotorPower(0);
+            flywheels.setDirectMotorPower(0);
+        }
+
+        public int getPickedUpParticles()
+        {
+            return pickedUpParticles;
+        }
+    }
+
+    private void stopPickUpTask() throws InterruptedException
+    {
+        harvester.setDirectMotorPower(0);
+        flywheels.setDirectMotorPower(0);
+        NiFTFlow.pauseForMS(100);
+        if (pickUpTask != null) {
+            //Stop the task.
+            pickUpTask.stop();
+        }
+    }
+
     private boolean getCapBall = true;
     private boolean parkOnCenterVortex = false;
 
@@ -52,12 +129,14 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
             idle ();
         }
 
-        sleep (delay);
+        NiFTFlow.pauseForMS (delay);
     }
 
     @Override
     protected void driverStationSaysGO () throws InterruptedException
     {
+        lights.setPower(.5);
+
         final boolean onBlueAlliance = (getAlliance() == Alliance.BLUE);
         final int autonomousSign = (onBlueAlliance ? 1 : -1);
 
@@ -99,14 +178,19 @@ public abstract class BallAuto extends AutoBase implements OnAlliance
             turnToHeading (70 * autonomousSign, TurnMode.BOTH, 3000);
         }
 
+        pickUpTask = new PickUpAndAutoRejectParticles();
+        pickUpTask.run();
+
         //Drive until we reach the appropriate position.
         NiFTConsole.outputNewSequentialLine ("Drive to the ramp, stopping upon bottom color sensor reaches the blue region on the ramp.");
         startDrivingAt (0.6);
 
         long startDriveTime = System.currentTimeMillis (); //Max time at 6 seconds.
-        while (bottomColorSensor.sensor.red () <= 2.5 && (System.currentTimeMillis () - startDriveTime) < 6000)
+        while ((System.currentTimeMillis () - startDriveTime) < 6000)
             manuallyApplySensorAdjustments (true);
 
         stopDriving ();
+
+        stopPickUpTask();
     }
 }

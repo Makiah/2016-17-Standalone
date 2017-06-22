@@ -83,7 +83,7 @@ public abstract class BeaconAuto extends AutoBase implements OnAlliance
         option2Red = option2ColorSensor.sensor.red () >= redThreshold && !option2Blue;
     }
 
-    final private boolean lightDebug = true;
+    final private boolean lightDebug = false;
     private PickUpAndAutoRejectParticles pickUpTask;
 
     //Called after runOpMode() has finished initializing by BaseFunctions.
