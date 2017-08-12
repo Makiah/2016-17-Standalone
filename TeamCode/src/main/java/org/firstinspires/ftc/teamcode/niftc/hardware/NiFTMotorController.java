@@ -151,7 +151,7 @@ public class NiFTMotorController
     /**
      * Resets the encoder of the robot in a step by step fashion, ending up with the encoder at a count of zero but not changing robot steering (left to gyro and this pid)
      */
-    public void resetEncoder ()
+    private final void setMotorMode(DcMotor motor, DcMotor.RunMode runMode)
     {
         boolean doneSuccessfully = false;
         long additionalTime = 0;
@@ -159,7 +159,7 @@ public class NiFTMotorController
         {
             try
             {
-                encoderMotor.setMode (DcMotor.RunMode.RUN_USING_ENCODER);
+                motor.setMode (runMode);
                 NiFTFlow.pauseForMS (100 + additionalTime);
                 doneSuccessfully = true;
             } catch (Exception e)
@@ -170,41 +170,13 @@ public class NiFTMotorController
                 additionalTime += 20;
             }
         }
-
-        doneSuccessfully = false;
-        additionalTime = 0;
-        while (!doneSuccessfully)
-        {
-            try
-            {
-                encoderMotor.setMode (DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                NiFTFlow.pauseForMS (100 + additionalTime);
-                doneSuccessfully = true;
-            } catch (Exception e)
-            {
-                if (e instanceof InterruptedException)
-                    return;
-
-                additionalTime += 20;
-            }
-        }
-
-        doneSuccessfully = false;
-        while (!doneSuccessfully)
-        {
-            try
-            {
-                encoderMotor.setMode (DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                NiFTFlow.pauseForMS (100 + additionalTime);
-                doneSuccessfully = true;
-            } catch (Exception e)
-            {
-                if (e instanceof InterruptedException)
-                    return;
-
-                additionalTime += 20;
-            }
-        }
+    }
+    public void resetEncoder ()
+    {
+        // Used to set the encoder to the appropriate position.
+        setMotorMode(encoderMotor, DcMotor.RunMode.RUN_USING_ENCODER);
+        setMotorMode(encoderMotor, DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        setMotorMode(encoderMotor, DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     /*------ THREADING ------*/
